@@ -49,4 +49,9 @@ nagy felbontású képeket  tartalmazzon az előző munkákról
 mobilon is jól használható   legyen 
 képek nagyíthatóságára is adjon esélyt 
 
+Technikai követelmények
+Reszponzív kialakítást Bootstrap 5 keretrendszer használatával probáljuk meg elérni hiszen ezt régebben használtuk.
+Node.js és Express segítségével REST APIt készitunk 
+Adatbázis és az időpontfoglalások tárolása MySQL adatbázisba lesz eltárolva
+Tiszta, jól dokumentált forráskód
  
