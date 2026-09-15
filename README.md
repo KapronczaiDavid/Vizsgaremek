@@ -1,4 +1,4 @@
-Daizy clean (auto kozmetika) 
+CleanRide (auto kozmetika) 
 A weboldal célja: 
 
 az autókozmetikai szolgáltatásainak professzionális bemutatása, az online időpontfoglalás egyszerűsítése, valamint új ügyfelek szerzése.
