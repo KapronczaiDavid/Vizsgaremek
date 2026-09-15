@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: localhost:3306
--- Létrehozás ideje: 2026. Sze 09. 11:20
+-- Létrehozás ideje: 2026. Sze 15. 08:52
 -- Kiszolgáló verziója: 5.7.24
 -- PHP verzió: 8.3.1
 
@@ -20,7 +20,7 @@ SET time_zone = "+00:00";
 --
 -- Adatbázis: `cleanride`
 --
-CREATE DATABASE IF NOT EXISTS `cleanride` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+CREATE DATABASE IF NOT EXISTS `cleanride` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 USE `cleanride`;
 
 -- --------------------------------------------------------
@@ -39,10 +39,10 @@ CREATE TABLE `appointments` (
   `appointment_time` time DEFAULT NULL,
   `status` varchar(30) DEFAULT NULL,
   `priority_level` enum('low','medium','high') DEFAULT 'low',
-  `notes` text,
+  `notes` mediumtext,
   `total_price` decimal(10,2) DEFAULT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 
@@ -57,7 +57,7 @@ CREATE TABLE `appointment_services` (
   `service_id` int(11) NOT NULL,
   `quantity` int(11) DEFAULT '1',
   `price` decimal(10,2) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 
@@ -69,14 +69,14 @@ DROP TABLE IF EXISTS `coupons`;
 CREATE TABLE `coupons` (
   `coupon_id` int(11) NOT NULL,
   `code` varchar(30) NOT NULL,
-  `description` text,
+  `description` mediumtext,
   `discount_percent` decimal(5,2) DEFAULT NULL,
   `discount_amount` decimal(10,2) DEFAULT NULL,
   `valid_from` date DEFAULT NULL,
   `valid_until` date DEFAULT NULL,
   `usage_limit` int(11) DEFAULT NULL,
   `active` tinyint(1) DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 
@@ -92,7 +92,7 @@ CREATE TABLE `loyalty_levels` (
   `priority_level` int(11) NOT NULL,
   `appointment_priority` tinyint(1) DEFAULT '0',
   `coupon_bonus_percent` decimal(5,2) DEFAULT '0.00'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 
@@ -107,9 +107,9 @@ CREATE TABLE `loyalty_transactions` (
   `appointment_id` int(11) DEFAULT NULL,
   `points` int(11) NOT NULL,
   `transaction_type` varchar(30) DEFAULT NULL,
-  `description` text,
+  `description` mediumtext,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 
@@ -127,7 +127,26 @@ CREATE TABLE `payments` (
   `payment_method` varchar(30) DEFAULT NULL,
   `payment_status` varchar(30) DEFAULT NULL,
   `payment_date` datetime DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Tábla szerkezet ehhez a táblához `ping`
+--
+
+DROP TABLE IF EXISTS `ping`;
+CREATE TABLE `ping` (
+  `id` bigint(20) NOT NULL,
+  `message` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- A tábla adatainak kiíratása `ping`
+--
+
+INSERT INTO `ping` (`id`, `message`) VALUES
+(1, 'hello');
 
 -- --------------------------------------------------------
 
@@ -141,9 +160,9 @@ CREATE TABLE `reviews` (
   `user_id` int(11) NOT NULL,
   `appointment_id` int(11) NOT NULL,
   `rating` int(11) DEFAULT NULL,
-  `comment` text,
+  `comment` mediumtext,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 
@@ -155,11 +174,12 @@ DROP TABLE IF EXISTS `services`;
 CREATE TABLE `services` (
   `service_id` int(11) NOT NULL,
   `name` varchar(100) NOT NULL,
-  `description` text,
+  `description` mediumtext,
   `price` decimal(10,2) DEFAULT NULL,
   `duration_minutes` int(11) DEFAULT NULL,
-  `active` tinyint(1) DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `active` tinyint(1) DEFAULT '1',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 
@@ -170,14 +190,25 @@ CREATE TABLE `services` (
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `user_id` int(11) NOT NULL,
-  `name` varchar(50) NOT NULL,
-  `email` varchar(100) NOT NULL,
-  `phone` varchar(20) DEFAULT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `phone` varchar(255) DEFAULT NULL,
   `password` varchar(255) NOT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `loyalty_points` int(11) DEFAULT '0',
-  `loyalty_level_id` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `loyalty_level_id` int(11) DEFAULT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- A tábla adatainak kiíratása `users`
+--
+
+INSERT INTO `users` (`user_id`, `name`, `email`, `phone`, `password`, `created_at`, `loyalty_points`, `loyalty_level_id`, `deleted_at`, `updated_at`) VALUES
+(1, 'Zoran', 'testemail@test.com', '0620234453343', 'testpassword', NULL, NULL, NULL, NULL, NULL),
+(3, 'Horty', 'testemail2@test.com', '0620123456789', 'testingpassword', '2026-09-15 10:44:59', NULL, NULL, NULL, NULL),
+(4, 'david', 'davidtestemial@test.com', '0620123456789', 'passingword', '2026-09-15 10:47:43', NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -194,8 +225,10 @@ CREATE TABLE `vehicles` (
   `year` int(11) DEFAULT NULL,
   `license_plate` varchar(20) DEFAULT NULL,
   `color` varchar(30) DEFAULT NULL,
-  `vehicle_type` varchar(30) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `vehicle_type` varchar(30) DEFAULT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `deleted_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 
@@ -210,9 +243,12 @@ CREATE TABLE `workers` (
   `last_name` varchar(50) NOT NULL,
   `phone` varchar(20) DEFAULT NULL,
   `email` varchar(100) DEFAULT NULL,
+  `password` varchar(255) NOT NULL,
   `position` varchar(50) DEFAULT NULL,
-  `active` tinyint(1) DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `active` tinyint(1) DEFAULT '1',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `deleted_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Indexek a kiírt táblákhoz
@@ -223,9 +259,9 @@ CREATE TABLE `workers` (
 --
 ALTER TABLE `appointments`
   ADD PRIMARY KEY (`appointment_id`),
+  ADD UNIQUE KEY `unique_worker_slot` (`worker_id`,`appointment_date`,`appointment_time`),
   ADD KEY `user_id` (`user_id`),
-  ADD KEY `vehicle_id` (`vehicle_id`),
-  ADD KEY `worker_id` (`worker_id`);
+  ADD KEY `vehicle_id` (`vehicle_id`);
 
 --
 -- A tábla indexei `appointment_services`
@@ -265,12 +301,18 @@ ALTER TABLE `payments`
   ADD KEY `coupon_id` (`coupon_id`);
 
 --
+-- A tábla indexei `ping`
+--
+ALTER TABLE `ping`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- A tábla indexei `reviews`
 --
 ALTER TABLE `reviews`
   ADD PRIMARY KEY (`review_id`),
-  ADD KEY `user_id` (`user_id`),
-  ADD KEY `appointment_id` (`appointment_id`);
+  ADD UNIQUE KEY `unique_appointment_review` (`appointment_id`),
+  ADD KEY `user_id` (`user_id`);
 
 --
 -- A tábla indexei `services`
@@ -297,7 +339,8 @@ ALTER TABLE `vehicles`
 -- A tábla indexei `workers`
 --
 ALTER TABLE `workers`
-  ADD PRIMARY KEY (`worker_id`);
+  ADD PRIMARY KEY (`worker_id`),
+  ADD UNIQUE KEY `unique_worker_email` (`email`);
 
 --
 -- A kiírt táblák AUTO_INCREMENT értéke
@@ -340,6 +383,12 @@ ALTER TABLE `payments`
   MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT a táblához `ping`
+--
+ALTER TABLE `ping`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT a táblához `reviews`
 --
 ALTER TABLE `reviews`
@@ -355,7 +404,7 @@ ALTER TABLE `services`
 -- AUTO_INCREMENT a táblához `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT a táblához `vehicles`
