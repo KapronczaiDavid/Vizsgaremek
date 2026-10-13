@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class Users {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
+    @Column(name = "id")
     private Integer id;private String name;private String password;private String phone;
     private LocalDateTime deletedAt;
     private LocalDateTime updatedAt;private Integer loyaltyPoints;
