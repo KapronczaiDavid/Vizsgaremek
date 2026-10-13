@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: localhost:3306
--- Létrehozás ideje: 2026. Sze 29. 11:11
+-- Létrehozás ideje: 2026. Okt 13. 09:16
 -- Kiszolgáló verziója: 5.7.24
 -- PHP verzió: 8.3.1
 
@@ -18,10 +18,10 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Adatbázis: `cleanride_database`
+-- Adatbázis: `cleanride`
 --
-CREATE DATABASE IF NOT EXISTS `cleanride_database` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-USE `cleanride_database`;
+CREATE DATABASE IF NOT EXISTS `cleanride` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `cleanride`;
 
 -- --------------------------------------------------------
 
@@ -35,10 +35,10 @@ CREATE TABLE `admins` (
   `name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `is_deleted` tinyint(1) NOT NULL DEFAULT '0',
   `deleted_at` datetime DEFAULT NULL,
-  `is_deleted` tinyint(1) NOT NULL DEFAULT '0'
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -53,12 +53,11 @@ CREATE TABLE `appointments` (
   `user_id` int(11) NOT NULL,
   `vehicle_id` int(11) NOT NULL,
   `worker_id` int(11) DEFAULT NULL,
-  `discount_category` enum('exterior_wash','interior_detailing','polishing','ceramic_coating','full_detailing') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `appointment_date` date NOT NULL,
   `appointment_time` time NOT NULL,
   `status` enum('pending','confirmed','in_progress','completed','cancelled','no_show') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
   `notes` text COLLATE utf8mb4_unicode_ci,
-  `total_price` decimal(10,0) DEFAULT NULL,
+  `total_price` int(11) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -75,25 +74,28 @@ CREATE TABLE `appointment_services` (
   `appointment_id` int(11) NOT NULL,
   `service_id` int(11) NOT NULL,
   `quantity` int(11) NOT NULL DEFAULT '1',
-  `price` decimal(10,0) NOT NULL
+  `price` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
 --
--- Tábla szerkezet ehhez a táblához `loyalty_levels`
+-- Tábla szerkezet ehhez a táblához `coupons`
 --
 
-DROP TABLE IF EXISTS `loyalty_levels`;
-CREATE TABLE `loyalty_levels` (
+DROP TABLE IF EXISTS `coupons`;
+CREATE TABLE `coupons` (
   `id` int(11) NOT NULL,
-  `name` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `min_xp` int(11) NOT NULL,
-  `exterior_wash_flat` decimal(10,0) NOT NULL DEFAULT '0',
-  `interior_detailing_percent` decimal(5,2) NOT NULL DEFAULT '0.00',
-  `polishing_flat` decimal(10,0) NOT NULL DEFAULT '0',
-  `ceramic_coating_percent` decimal(5,2) NOT NULL DEFAULT '0.00',
-  `full_detailing_percent` decimal(5,2) NOT NULL DEFAULT '0.00'
+  `code` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `discount_type` enum('percent','flat') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `discount_value` int(11) NOT NULL,
+  `loyalty_level` enum('bronze','silver','gold','platinum','diamond') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `valid_from` date DEFAULT NULL,
+  `valid_until` date DEFAULT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -106,15 +108,27 @@ DROP TABLE IF EXISTS `payments`;
 CREATE TABLE `payments` (
   `id` int(11) NOT NULL,
   `appointment_id` int(11) NOT NULL,
-  `amount` decimal(10,0) DEFAULT NULL,
-  `discount_amount` decimal(10,0) NOT NULL DEFAULT '0',
-  `payment_status` enum('unpaid','paid','refunded') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'unpaid',
+  `coupon_id` int(11) DEFAULT NULL,
+  `amount` int(11) NOT NULL,
+  `discount_amount` int(11) NOT NULL DEFAULT '0',
+  `payment_method` enum('cash') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'cash',
+  `payment_status` enum('unpaid','paid') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'unpaid',
   `payment_date` datetime DEFAULT NULL,
   `collected_by_worker_id` int(11) DEFAULT NULL,
-  `refund_amount` decimal(10,0) DEFAULT NULL,
-  `refund_reason` text COLLATE utf8mb4_unicode_ci,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tábla szerkezet ehhez a táblához `ping`
+--
+
+DROP TABLE IF EXISTS `ping`;
+CREATE TABLE `ping` (
+  `id` bigint(20) NOT NULL,
+  `message` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -128,7 +142,7 @@ CREATE TABLE `reviews` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `appointment_id` int(11) NOT NULL,
-  `rating` int(11) NOT NULL,
+  `rating` tinyint(4) NOT NULL,
   `comment` text COLLATE utf8mb4_unicode_ci,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -142,11 +156,10 @@ CREATE TABLE `reviews` (
 DROP TABLE IF EXISTS `services`;
 CREATE TABLE `services` (
   `id` int(11) NOT NULL,
-  `category` enum('exterior_wash','interior_detailing','polishing','ceramic_coating','full_detailing') COLLATE utf8mb4_unicode_ci NOT NULL,
   `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `description` text COLLATE utf8mb4_unicode_ci,
-  `price` decimal(10,0) DEFAULT NULL,
-  `duration_minutes` int(11) DEFAULT NULL,
+  `price` int(11) NOT NULL,
+  `duration_minutes` int(11) NOT NULL,
   `active` tinyint(1) NOT NULL DEFAULT '1',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
@@ -161,18 +174,26 @@ CREATE TABLE `services` (
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
-  `loyalty_level_id` int(11) DEFAULT NULL,
-  `name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `email_verified` tinyint(1) NOT NULL DEFAULT '0',
-  `phone` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `phone` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `xp_points` int(11) NOT NULL DEFAULT '0',
+  `loyalty_level` enum('bronze','silver','gold','platinum','diamond') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'bronze',
+  `is_deleted` tinyint(1) NOT NULL DEFAULT '0',
+  `deleted_at` datetime DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  `deleted_at` datetime DEFAULT NULL,
-  `is_deleted` tinyint(1) NOT NULL DEFAULT '0'
+  `loyalty_points` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- A tábla adatainak kiíratása `users`
+--
+
+INSERT INTO `users` (`id`, `name`, `email`, `email_verified`, `phone`, `password`, `xp_points`, `loyalty_level`, `is_deleted`, `deleted_at`, `created_at`, `updated_at`, `loyalty_points`) VALUES
+(1, 'Zoran', 'testemail@test.com', 0, '0620234453343', 'testpassword', 0, 'bronze', 0, NULL, '2026-10-13 10:32:55', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -183,8 +204,9 @@ CREATE TABLE `users` (
 DROP TABLE IF EXISTS `user_tokens`;
 CREATE TABLE `user_tokens` (
   `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `type` enum('password_reset','email_verification') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `admin_id` int(11) DEFAULT NULL,
+  `type` enum('email_verification','password_reset') COLLATE utf8mb4_unicode_ci NOT NULL,
   `token_hash` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `expires_at` datetime NOT NULL,
   `used_at` datetime DEFAULT NULL,
@@ -203,11 +225,11 @@ CREATE TABLE `vehicles` (
   `user_id` int(11) NOT NULL,
   `brand` enum('alfa_romeo','audi','bmw','chevrolet','citroen','cupra','dacia','ducati','fiat','ford','harley_davidson','honda','hyundai','iveco','jaguar','jeep','kawasaki','kia','land_rover','lexus','man','mazda','mercedes_benz','mini','mitsubishi','nissan','opel','peugeot','porsche','renault','scania','seat','skoda','smart','subaru','suzuki','tesla','toyota','volkswagen','volvo','yamaha','other') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `license_plate` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `vehicle_type` enum('sedan','suv','truck','van','motorcycle','other') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `vehicle_type` enum('sedan','suv','truck','van','other') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `is_deleted` tinyint(1) NOT NULL DEFAULT '0',
   `deleted_at` datetime DEFAULT NULL,
-  `is_deleted` tinyint(1) NOT NULL DEFAULT '0'
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -226,10 +248,10 @@ CREATE TABLE `workers` (
   `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `position` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `active` tinyint(1) NOT NULL DEFAULT '1',
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `is_deleted` tinyint(1) NOT NULL DEFAULT '0',
   `deleted_at` datetime DEFAULT NULL,
-  `is_deleted` tinyint(1) NOT NULL DEFAULT '0'
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -242,7 +264,7 @@ DROP TABLE IF EXISTS `xp_transactions`;
 CREATE TABLE `xp_transactions` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `appointment_id` int(11) DEFAULT NULL,
+  `appointment_id` int(11) NOT NULL,
   `xp_earned` int(11) NOT NULL,
   `description` text COLLATE utf8mb4_unicode_ci,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -257,48 +279,55 @@ CREATE TABLE `xp_transactions` (
 --
 ALTER TABLE `admins`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `email` (`email`);
+  ADD UNIQUE KEY `uq_admins_email` (`email`);
 
 --
 -- A tábla indexei `appointments`
 --
 ALTER TABLE `appointments`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`),
-  ADD KEY `vehicle_id` (`vehicle_id`),
-  ADD KEY `worker_id` (`worker_id`);
+  ADD UNIQUE KEY `uq_appointments_worker_slot` (`worker_id`,`appointment_date`,`appointment_time`),
+  ADD KEY `idx_appointments_date_status` (`appointment_date`,`status`),
+  ADD KEY `idx_appointments_user` (`user_id`),
+  ADD KEY `idx_appointments_vehicle` (`vehicle_id`);
 
 --
 -- A tábla indexei `appointment_services`
 --
 ALTER TABLE `appointment_services`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `appointment_id` (`appointment_id`),
-  ADD KEY `service_id` (`service_id`);
+  ADD UNIQUE KEY `uq_appt_services` (`appointment_id`,`service_id`),
+  ADD KEY `idx_appt_services_service` (`service_id`);
 
 --
--- A tábla indexei `loyalty_levels`
+-- A tábla indexei `coupons`
 --
-ALTER TABLE `loyalty_levels`
+ALTER TABLE `coupons`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `name` (`name`),
-  ADD UNIQUE KEY `min_xp` (`min_xp`);
+  ADD UNIQUE KEY `uq_coupons_code` (`code`);
 
 --
 -- A tábla indexei `payments`
 --
 ALTER TABLE `payments`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `appointment_id` (`appointment_id`),
-  ADD KEY `collected_by_worker_id` (`collected_by_worker_id`);
+  ADD UNIQUE KEY `uq_payments_appointment` (`appointment_id`),
+  ADD KEY `idx_payments_coupon` (`coupon_id`),
+  ADD KEY `idx_payments_worker` (`collected_by_worker_id`);
+
+--
+-- A tábla indexei `ping`
+--
+ALTER TABLE `ping`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- A tábla indexei `reviews`
 --
 ALTER TABLE `reviews`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `appointment_id` (`appointment_id`),
-  ADD KEY `user_id` (`user_id`);
+  ADD UNIQUE KEY `uq_reviews_appointment` (`appointment_id`),
+  ADD KEY `idx_reviews_user` (`user_id`);
 
 --
 -- A tábla indexei `services`
@@ -311,40 +340,40 @@ ALTER TABLE `services`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `email` (`email`),
-  ADD UNIQUE KEY `phone` (`phone`),
-  ADD KEY `loyalty_level_id` (`loyalty_level_id`);
+  ADD UNIQUE KEY `uq_users_phone` (`phone`),
+  ADD UNIQUE KEY `uq_users_email` (`email`);
 
 --
 -- A tábla indexei `user_tokens`
 --
 ALTER TABLE `user_tokens`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `token_hash` (`token_hash`),
-  ADD KEY `user_id` (`user_id`);
+  ADD UNIQUE KEY `uq_user_tokens_hash` (`token_hash`),
+  ADD KEY `idx_user_tokens_user_type` (`user_id`,`type`),
+  ADD KEY `idx_user_tokens_admin_type` (`admin_id`,`type`);
 
 --
 -- A tábla indexei `vehicles`
 --
 ALTER TABLE `vehicles`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`);
+  ADD KEY `idx_vehicles_user` (`user_id`);
 
 --
 -- A tábla indexei `workers`
 --
 ALTER TABLE `workers`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `phone` (`phone`),
-  ADD UNIQUE KEY `email` (`email`);
+  ADD UNIQUE KEY `uq_workers_phone` (`phone`),
+  ADD UNIQUE KEY `uq_workers_email` (`email`);
 
 --
 -- A tábla indexei `xp_transactions`
 --
 ALTER TABLE `xp_transactions`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `appointment_id` (`appointment_id`),
-  ADD KEY `user_id` (`user_id`);
+  ADD UNIQUE KEY `uq_xp_appointment` (`appointment_id`),
+  ADD KEY `idx_xp_user` (`user_id`);
 
 --
 -- A kiírt táblák AUTO_INCREMENT értéke
@@ -369,9 +398,9 @@ ALTER TABLE `appointment_services`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT a táblához `loyalty_levels`
+-- AUTO_INCREMENT a táblához `coupons`
 --
-ALTER TABLE `loyalty_levels`
+ALTER TABLE `coupons`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
@@ -379,6 +408,12 @@ ALTER TABLE `loyalty_levels`
 --
 ALTER TABLE `payments`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT a táblához `ping`
+--
+ALTER TABLE `ping`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT a táblához `reviews`
@@ -396,7 +431,7 @@ ALTER TABLE `services`
 -- AUTO_INCREMENT a táblához `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT a táblához `user_tokens`
@@ -430,55 +465,51 @@ ALTER TABLE `xp_transactions`
 -- Megkötések a táblához `appointments`
 --
 ALTER TABLE `appointments`
-  ADD CONSTRAINT `appointments_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
-  ADD CONSTRAINT `appointments_ibfk_2` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`id`),
-  ADD CONSTRAINT `appointments_ibfk_3` FOREIGN KEY (`worker_id`) REFERENCES `workers` (`id`);
+  ADD CONSTRAINT `fk_appointments_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  ADD CONSTRAINT `fk_appointments_vehicle` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`id`),
+  ADD CONSTRAINT `fk_appointments_worker` FOREIGN KEY (`worker_id`) REFERENCES `workers` (`id`);
 
 --
 -- Megkötések a táblához `appointment_services`
 --
 ALTER TABLE `appointment_services`
-  ADD CONSTRAINT `appointment_services_ibfk_1` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`),
-  ADD CONSTRAINT `appointment_services_ibfk_2` FOREIGN KEY (`service_id`) REFERENCES `services` (`id`);
+  ADD CONSTRAINT `fk_appt_services_appointment` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`),
+  ADD CONSTRAINT `fk_appt_services_service` FOREIGN KEY (`service_id`) REFERENCES `services` (`id`);
 
 --
 -- Megkötések a táblához `payments`
 --
 ALTER TABLE `payments`
-  ADD CONSTRAINT `payments_ibfk_1` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`),
-  ADD CONSTRAINT `payments_ibfk_2` FOREIGN KEY (`collected_by_worker_id`) REFERENCES `workers` (`id`);
+  ADD CONSTRAINT `fk_payments_appointment` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`),
+  ADD CONSTRAINT `fk_payments_coupon` FOREIGN KEY (`coupon_id`) REFERENCES `coupons` (`id`),
+  ADD CONSTRAINT `fk_payments_worker` FOREIGN KEY (`collected_by_worker_id`) REFERENCES `workers` (`id`);
 
 --
 -- Megkötések a táblához `reviews`
 --
 ALTER TABLE `reviews`
-  ADD CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
-  ADD CONSTRAINT `reviews_ibfk_2` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`);
-
---
--- Megkötések a táblához `users`
---
-ALTER TABLE `users`
-  ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`loyalty_level_id`) REFERENCES `loyalty_levels` (`id`);
+  ADD CONSTRAINT `fk_reviews_appointment` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`),
+  ADD CONSTRAINT `fk_reviews_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 --
 -- Megkötések a táblához `user_tokens`
 --
 ALTER TABLE `user_tokens`
-  ADD CONSTRAINT `user_tokens_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+  ADD CONSTRAINT `fk_user_tokens_admin` FOREIGN KEY (`admin_id`) REFERENCES `admins` (`id`),
+  ADD CONSTRAINT `fk_user_tokens_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 --
 -- Megkötések a táblához `vehicles`
 --
 ALTER TABLE `vehicles`
-  ADD CONSTRAINT `vehicles_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+  ADD CONSTRAINT `fk_vehicles_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 --
 -- Megkötések a táblához `xp_transactions`
 --
 ALTER TABLE `xp_transactions`
-  ADD CONSTRAINT `xp_transactions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
-  ADD CONSTRAINT `xp_transactions_ibfk_2` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`);
+  ADD CONSTRAINT `fk_xp_appointment` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`),
+  ADD CONSTRAINT `fk_xp_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
