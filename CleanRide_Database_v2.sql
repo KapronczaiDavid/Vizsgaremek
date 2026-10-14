@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: localhost:3306
--- Létrehozás ideje: 2026. Okt 13. 09:16
+-- Létrehozás ideje: 2026. Okt 14. 12:09
 -- Kiszolgáló verziója: 5.7.24
 -- PHP verzió: 8.3.1
 
@@ -22,6 +22,44 @@ SET time_zone = "+00:00";
 --
 CREATE DATABASE IF NOT EXISTS `cleanride` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `cleanride`;
+
+DELIMITER $$
+--
+-- Eljárások
+--
+DROP PROCEDURE IF EXISTS `create_user`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_user` (IN `nameIn` VARCHAR(50), IN `emailIn` VARCHAR(100), IN `phoneIn` VARCHAR(20), IN `passwordIn` VARCHAR(255))   BEGIN
+  INSERT INTO users (name, email, phone, password)
+  VALUES (nameIn, emailIn, phoneIn, passwordIn);
+
+  SELECT * FROM users WHERE id = LAST_INSERT_ID();
+END$$
+
+DROP PROCEDURE IF EXISTS `delete_user`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_user` (IN `idIn` INT)   BEGIN
+  UPDATE users
+  SET is_deleted = TRUE, deleted_at = NOW()
+  WHERE id = idIn AND is_deleted = FALSE;
+END$$
+
+DROP PROCEDURE IF EXISTS `get_all_users`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_users` ()   BEGIN
+  SELECT * FROM users WHERE is_deleted = FALSE;
+END$$
+
+DROP PROCEDURE IF EXISTS `get_user_by_id`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_user_by_id` (IN `idIn` INT)   BEGIN
+  SELECT * FROM users WHERE id = idIn AND is_deleted = FALSE;
+END$$
+
+DROP PROCEDURE IF EXISTS `update_user`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_user` (IN `idIn` INT, IN `nameIn` VARCHAR(50), IN `emailIn` VARCHAR(100), IN `phoneIn` VARCHAR(20))   BEGIN
+  UPDATE users
+  SET name = nameIn, email = emailIn, phone = phoneIn
+  WHERE id = idIn AND is_deleted = FALSE;
+END$$
+
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -174,13 +212,13 @@ CREATE TABLE `services` (
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `email` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `email_verified` tinyint(1) NOT NULL DEFAULT '0',
-  `phone` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `phone` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
   `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `xp_points` int(11) NOT NULL DEFAULT '0',
-  `loyalty_level` enum('bronze','silver','gold','platinum','diamond') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'bronze',
+  `loyalty_level` enum('BRONZE','SILVER','GOLD','PLATINUM','DIAMOND') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'BRONZE',
   `is_deleted` tinyint(1) NOT NULL DEFAULT '0',
   `deleted_at` datetime DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -193,7 +231,10 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `email_verified`, `phone`, `password`, `xp_points`, `loyalty_level`, `is_deleted`, `deleted_at`, `created_at`, `updated_at`, `loyalty_points`) VALUES
-(1, 'Zoran', 'testemail@test.com', 0, '0620234453343', 'testpassword', 0, 'bronze', 0, NULL, '2026-10-13 10:32:55', NULL, NULL);
+(1, 'Zoran', 'testemail@test.com', 0, '0620234453343', 'testpassword', 0, 'BRONZE', 0, NULL, '2026-10-13 10:32:55', NULL, NULL),
+(2, 'Zoran1', 'testemail1@test.com', 0, '+36202344533', '$2a$10$61dH7ji8T91YohUmKi1yDuCd3nAdUwQa15crV3GxxPWCiHP4iKcRy', 0, 'BRONZE', 1, '2026-10-14 11:35:14', '2026-10-14 13:25:28', '2026-10-14 13:35:13', NULL),
+(3, 'david', 'uglymail@test.com', 0, '+36202344523', '$2a$10$lICD369dgCqYp2fxN695LuiAcDjhniSYTcpZeh2hi1PtajgExhBj2', 0, 'BRONZE', 1, '2026-10-14 12:02:21', '2026-10-14 13:59:37', '2026-10-14 14:02:21', NULL),
+(4, 'ferenc', 'ferences@test.com', 0, '06204976687', '$2a$10$Ce31MK0X0.8kpLcq29Qcsu8LpxN3j.SUW5dOe8UrFbEgpdKSQSu0C', 0, 'BRONZE', 0, NULL, '2026-10-14 14:02:10', '2026-10-14 14:04:03', NULL);
 
 -- --------------------------------------------------------
 
@@ -340,8 +381,8 @@ ALTER TABLE `services`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uq_users_phone` (`phone`),
-  ADD UNIQUE KEY `uq_users_email` (`email`);
+  ADD UNIQUE KEY `uq_users_email` (`email`),
+  ADD UNIQUE KEY `uq_users_phone` (`phone`);
 
 --
 -- A tábla indexei `user_tokens`
@@ -431,7 +472,7 @@ ALTER TABLE `services`
 -- AUTO_INCREMENT a táblához `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT a táblához `user_tokens`
