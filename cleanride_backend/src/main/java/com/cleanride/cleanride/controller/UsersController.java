@@ -1,35 +1,47 @@
 package com.cleanride.cleanride.controller;
-import com.cleanride.cleanride.entity.Users;
-import com.cleanride.cleanride.repository.UsersRepository;
-import org.springframework.cglib.core.Local;
+
+import com.cleanride.cleanride.dto.request.CreateUserRequest;
+import com.cleanride.cleanride.dto.request.UpdateUserRequest;
+import com.cleanride.cleanride.dto.response.UserResponse;
+import com.cleanride.cleanride.service.UserService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
-@RestController @RequestMapping("/api/users")
+@RestController
+@RequestMapping("/api/users")
+@RequiredArgsConstructor
 public class UsersController {
-    private final UsersRepository usersRepository;
 
-    public UsersController(UsersRepository usersRepository) {
-        this.usersRepository = usersRepository;
-    }
-    @GetMapping
-    public List<Users> getAll() {
-        return usersRepository.findAll();
-    }
+    private final UserService userService;
+
     @PostMapping
-    public Users create(@RequestParam String name, @RequestParam String email, @RequestParam String phone,
-                        @RequestParam String password
-                        ) {
-
-        Users user = new Users();
-        user.setName(name);
-        user.setEmail(email);
-        user.setPhone(phone);
-        user.setPassword(password);
-
-
-        return usersRepository.save(user);
+    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(request));
     }
+
+    @GetMapping
+    public List<UserResponse> getAll() {
+        return userService.getAll();
     }
+
+    @GetMapping("/{id}")
+    public UserResponse getById(@PathVariable Integer id) {
+        return userService.getById(id);
+    }
+
+    @PutMapping("/{id}")
+    public UserResponse updateUser(@PathVariable Integer id,
+                                   @Valid @RequestBody UpdateUserRequest request) {
+        return userService.updateUser(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    public void softDelete(@PathVariable Integer id) {
+        userService.softDelete(id);
+    }
+}
