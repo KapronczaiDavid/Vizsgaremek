@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: localhost:3306
--- Létrehozás ideje: 2026. Okt 14. 12:09
+-- Létrehozás ideje: 2026. Okt 15. 09:00
 -- Kiszolgáló verziója: 5.7.24
 -- PHP verzió: 8.3.1
 
@@ -32,7 +32,10 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `create_user` (IN `nameIn` VARCHAR(5
   INSERT INTO users (name, email, phone, password)
   VALUES (nameIn, emailIn, phoneIn, passwordIn);
 
-  SELECT * FROM users WHERE id = LAST_INSERT_ID();
+  SELECT id, name, email, email_verified, phone, password, xp_points,
+         loyalty_level, is_deleted, deleted_at, created_at, updated_at
+  FROM users
+  WHERE id = LAST_INSERT_ID();
 END$$
 
 DROP PROCEDURE IF EXISTS `delete_user`$$
@@ -43,14 +46,22 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_user` (IN `idIn` INT)   BEGI
 END$$
 
 DROP PROCEDURE IF EXISTS `get_all_users`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_users` ()   BEGIN
-  SELECT * FROM users WHERE is_deleted = FALSE;
-END$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_users` ()   SELECT id, name, email, email_verified, phone, password, xp_points,
+       loyalty_level, is_deleted, deleted_at, created_at, updated_at
+FROM users
+WHERE is_deleted = FALSE$$
+
+DROP PROCEDURE IF EXISTS `get_user_by_email`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_user_by_email` ()   SELECT id, name, email, email_verified, phone, password, xp_points,
+       loyalty_level, is_deleted, deleted_at, created_at, updated_at
+FROM users
+WHERE email = emailIn AND is_deleted = FALSE$$
 
 DROP PROCEDURE IF EXISTS `get_user_by_id`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `get_user_by_id` (IN `idIn` INT)   BEGIN
-  SELECT * FROM users WHERE id = idIn AND is_deleted = FALSE;
-END$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_user_by_id` (IN `idIn` INT)   SELECT id, name, email, email_verified, phone, password, xp_points,
+       loyalty_level, is_deleted, deleted_at, created_at, updated_at
+FROM users
+WHERE id = idIn AND is_deleted = FALSE$$
 
 DROP PROCEDURE IF EXISTS `update_user`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `update_user` (IN `idIn` INT, IN `nameIn` VARCHAR(50), IN `emailIn` VARCHAR(100), IN `phoneIn` VARCHAR(20))   BEGIN
