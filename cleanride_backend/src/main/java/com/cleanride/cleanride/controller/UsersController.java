@@ -1,6 +1,7 @@
 package com.cleanride.cleanride.controller;
 
 import com.cleanride.cleanride.dto.request.CreateUserRequest;
+import com.cleanride.cleanride.dto.request.LoginRequest;
 import com.cleanride.cleanride.dto.request.UpdateUserRequest;
 import com.cleanride.cleanride.dto.response.UserResponse;
 import com.cleanride.cleanride.service.UserService;
@@ -23,6 +24,10 @@ public class UsersController {
     public ResponseEntity<UserResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(request));
     }
+    @PostMapping("/login")
+    public UserResponse login(@Valid @RequestBody LoginRequest request) {
+        return userService.login(request);
+    }
 
     @GetMapping
     public List<UserResponse> getAll() {
@@ -39,6 +44,7 @@ public class UsersController {
                                    @Valid @RequestBody UpdateUserRequest request) {
         return userService.updateUser(id, request);
     }
+
 
     @DeleteMapping("/{id}")
     public void softDelete(@PathVariable Integer id) {

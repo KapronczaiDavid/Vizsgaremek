@@ -1,4 +1,6 @@
 spring:
+  mvc:
+    log-resolved-exception: true
   application:
     name: cleanride
 
@@ -15,3 +17,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+  server:
+    error:
+      include-message: always

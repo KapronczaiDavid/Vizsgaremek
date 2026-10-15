@@ -1,6 +1,7 @@
 package com.cleanride.cleanride.service;
 
 import com.cleanride.cleanride.dto.request.CreateUserRequest;
+import com.cleanride.cleanride.dto.request.LoginRequest;
 import com.cleanride.cleanride.dto.request.UpdateUserRequest;
 import com.cleanride.cleanride.dto.response.UserResponse;
 import com.cleanride.cleanride.entity.Users;
@@ -54,6 +55,14 @@ public class UserService {
         return toResponseDto(findActiveUser(id));
     }
 
+    public UserResponse login(LoginRequest request) {
+        Users user = userRepository.findActiveByEmail(request.getEmail())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Hibás email vagy jelszó"));
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Hibás email vagy jelszó");
+        }
+        return toResponseDto(user);
+    }
     @Transactional
     public UserResponse updateUser(Integer id, UpdateUserRequest request) {
         Users user = findActiveUser(id);
@@ -92,6 +101,7 @@ public class UserService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Nincs ilyen felhasználó: " + id));
     }
+
 
     private UserResponse toResponseDto(Users user) {
         return UserResponse.builder()
