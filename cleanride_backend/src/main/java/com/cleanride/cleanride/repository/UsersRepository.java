@@ -15,24 +15,24 @@ public interface UsersRepository extends JpaRepository<Users, Integer> {
     boolean existsByPhone(String phone);
 
     @Query(value = "CALL create_user(:name, :email, :phone, :hash)", nativeQuery = true)
-    Users createUserProc(@Param("name") String name, @Param("email") String email,
+    Users createUser(@Param("name") String name, @Param("email") String email,
                          @Param("phone") String phone, @Param("hash") String hash);
 
     @Query(value = "CALL get_all_users()", nativeQuery = true)
-    List<Users> getAllUsersProc();
+    List<Users> getAllUsers();
 
     @Query(value = "CALL get_user_by_id(:id)", nativeQuery = true)
-    Optional<Users> getUserByIdProc(@Param("id") Integer id);
+    Optional<Users> getUserById(@Param("id") Integer id);
 
     @Query(value = "CALL get_user_by_email(:email)", nativeQuery = true)
-    Optional<Users> getUserByEmailProc(@Param("email") String email);
+    Optional<Users> getUserByEmail(@Param("email") String email);
 
     @Modifying(clearAutomatically = true)
     @Query(value = "CALL update_user(:id, :name, :email, :phone)", nativeQuery = true)
-    void updateUserProc(@Param("id") Integer id, @Param("name") String name,
+    void updateUser(@Param("id") Integer id, @Param("name") String name,
                         @Param("email") String email, @Param("phone") String phone);
 
     @Modifying(clearAutomatically = true)
     @Query(value = "CALL delete_user(:id)", nativeQuery = true)
-    void deleteUserProc(@Param("id") Integer id);
+    void deleteUser(@Param("id") Integer id);
 }

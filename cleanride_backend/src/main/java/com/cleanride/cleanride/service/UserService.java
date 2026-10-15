@@ -33,7 +33,7 @@ public class UserService {
                     "Ez a telefonszám már foglalt: " + request.getPhone());
         }
 
-        Users saved = userRepository.createUserProc(
+        Users saved = userRepository.createUser(
                 request.getName(),
                 request.getEmail(),
                 request.getPhone(),
@@ -43,7 +43,7 @@ public class UserService {
     }
 
     public List<UserResponse> getAll() {
-        return userRepository.getAllUsersProc().stream()
+        return userRepository.getAllUsers().stream()
                 .map(this::toResponseDto)
                 .toList();
     }
@@ -53,7 +53,7 @@ public class UserService {
     }
 
     public UserResponse login(LoginRequest request) {
-        Users user = userRepository.getUserByEmailProc(request.getEmail())
+        Users user = userRepository.getUserByEmail(request.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                         "Hibás email vagy jelszó"));
 
@@ -80,18 +80,18 @@ public class UserService {
                     "Ez a telefonszám már foglalt: " + request.getPhone());
         }
 
-        userRepository.updateUserProc(id, request.getName(), request.getEmail(), request.getPhone());
+        userRepository.updateUser(id, request.getName(), request.getEmail(), request.getPhone());
         return getById(id);
     }
 
     @Transactional
     public void softDelete(Integer id) {
         findActiveUser(id);
-        userRepository.deleteUserProc(id);
+        userRepository.deleteUser(id);
     }
 
     private Users findActiveUser(Integer id) {
-        return userRepository.getUserByIdProc(id)
+        return userRepository.getUserById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Nincs ilyen felhasználó: " + id));
     }
