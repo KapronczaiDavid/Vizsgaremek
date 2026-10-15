@@ -52,7 +52,6 @@ import java.time.LocalDateTime;
         @Column(name = "deleted_at")
         private LocalDateTime deletedAt;
 
-        // Az adatbázis tölti ki, ezért a Hibernate sem írja felül
         @Column(name = "created_at", insertable = false, updatable = false)
         private LocalDateTime createdAt;
 

@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -34,19 +33,17 @@ public class UserService {
                     "Ez a telefonszám már foglalt: " + request.getPhone());
         }
 
-        Users user = Users.builder()
-                .name(request.getName())
-                .email(request.getEmail())
-                .phone(request.getPhone())
-                .passwordHash(passwordEncoder.encode(request.getPassword()))
-                .build();
+        Users saved = userRepository.createUserProc(
+                request.getName(),
+                request.getEmail(),
+                request.getPhone(),
+                passwordEncoder.encode(request.getPassword()));
 
-        Users saved = userRepository.save(user);
         return toResponseDto(saved);
     }
 
     public List<UserResponse> getAll() {
-        return userRepository.findAllActive().stream()
+        return userRepository.getAllUsersProc().stream()
                 .map(this::toResponseDto)
                 .toList();
     }
@@ -56,13 +53,18 @@ public class UserService {
     }
 
     public UserResponse login(LoginRequest request) {
-        Users user = userRepository.findActiveByEmail(request.getEmail())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Hibás email vagy jelszó"));
+        Users user = userRepository.getUserByEmailProc(request.getEmail())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                        "Hibás email vagy jelszó"));
+
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Hibás email vagy jelszó");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "Hibás email vagy jelszó");
         }
+
         return toResponseDto(user);
     }
+
     @Transactional
     public UserResponse updateUser(Integer id, UpdateUserRequest request) {
         Users user = findActiveUser(id);
@@ -78,30 +80,21 @@ public class UserService {
                     "Ez a telefonszám már foglalt: " + request.getPhone());
         }
 
-        user.setName(request.getName());
-        user.setEmail(request.getEmail());
-        user.setPhone(request.getPhone());
-
-        Users saved = userRepository.save(user);
-        return toResponseDto(saved);
+        userRepository.updateUserProc(id, request.getName(), request.getEmail(), request.getPhone());
+        return getById(id);
     }
 
     @Transactional
     public void softDelete(Integer id) {
-        Users user = findActiveUser(id);
-
-        user.setIsDeleted(true);
-        user.setDeletedAt(LocalDateTime.now());
-
-        userRepository.save(user);
+        findActiveUser(id);
+        userRepository.deleteUserProc(id);
     }
 
     private Users findActiveUser(Integer id) {
-        return userRepository.findActiveById(id)
+        return userRepository.getUserByIdProc(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Nincs ilyen felhasználó: " + id));
     }
-
 
     private UserResponse toResponseDto(Users user) {
         return UserResponse.builder()
