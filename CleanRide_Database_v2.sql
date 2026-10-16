@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: localhost:3306
--- Létrehozás ideje: 2026. Okt 16. 11:43
+-- Létrehozás ideje: 2026. Okt 16. 19:36
 -- Kiszolgáló verziója: 5.7.24
 -- PHP verzió: 8.3.1
 
@@ -89,9 +89,12 @@ FROM users
 WHERE id = idIn AND is_deleted = FALSE$$
 
 DROP PROCEDURE IF EXISTS `update_service`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `update_service` (IN `idIn` INT(11), IN `nameIn` VARCHAR(100), IN `descriptionIn` TEXT, IN `priceIn` INT(11), IN `durationMinutesIn` INT(11))   UPDATE services
-SET name = nameIn, description = descriptionIn, price = priceIn,duration_minutes = durationMinutesIn
-WHERE id = idIn AND active = true$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_service` (IN `idIn` INT, IN `nameIn` VARCHAR(100), IN `descriptionIn` TEXT, IN `priceIn` INT, IN `durationMinutesIn` INT)   BEGIN
+  UPDATE services
+  SET name = nameIn, description = descriptionIn,
+      price = priceIn, duration_minutes = durationMinutesIn
+  WHERE id = idIn AND active = TRUE;
+END$$
 
 DROP PROCEDURE IF EXISTS `update_user`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `update_user` (IN `idIn` INT(11), IN `nameIn` VARCHAR(50), IN `emailIn` VARCHAR(100), IN `phoneIn` VARCHAR(20))   UPDATE users
@@ -247,7 +250,9 @@ CREATE TABLE `services` (
 --
 
 INSERT INTO `services` (`id`, `name`, `description`, `price`, `duration_minutes`, `active`, `created_at`, `updated_at`) VALUES
-(1, 'Exterior wash', 'Basic exterior hand wash and dry', 5000, 30, 1, '2026-10-16 13:41:28', NULL);
+(1, 'Exterior wash', 'Basic exterior hand wash and dry', 5000, 30, 1, '2026-10-16 21:27:21', '2026-10-16 21:29:06'),
+(2, 'Svc A renamed 1792178960457', 'x', 7777, 45, 0, '2026-10-16 21:29:20', '2026-10-16 21:29:22'),
+(3, 'Svc B 1792178960457', 'Interior vacuum', 3000, 20, 0, '2026-10-16 21:29:20', '2026-10-16 21:29:23');
 
 -- --------------------------------------------------------
 
@@ -284,7 +289,9 @@ INSERT INTO `users` (`id`, `name`, `email`, `email_verified`, `phone`, `password
 (5, 'kukirinn', 'kukirinn@test1.com', 0, '+36201111', '$2a$10$cJQDzfYlkHzzYg1tv/nHT.akMRhlnqRHeKoici/Hs7MpcnX3B9zF6', 0, 'BRONZE', 0, NULL, '2026-10-15 11:55:31', '2026-10-15 11:57:35', NULL),
 (6, 'kukirin20', 'kukirin22@test1.com', 0, '+362011122', '$2a$10$ct79RQcKhcWXZrMazIqL3ObZN.069OA2RbPisjwX8qJtPBsJY4NaO', 0, 'BRONZE', 0, NULL, '2026-10-15 12:28:29', NULL, NULL),
 (7, 'Test One', 'user1_1792062503217@test.com', 0, '+36204754012', '$2a$10$TsjO19aRl.e88ggeqTOg3uriA.MQEif7OckEXrcoIILU5uP8X8MW6', 0, 'BRONZE', 0, NULL, '2026-10-15 13:08:26', NULL, NULL),
-(8, 'Test Two', 'user2_1792062503217@test.com', 0, '+36306380377', '$2a$10$nPqlEBHwDLWG/3XC6I1WhOJm37qJIvqNpE/EBI9oFf8MBke2mjjXC', 0, 'BRONZE', 0, NULL, '2026-10-15 13:09:00', NULL, NULL);
+(8, 'Test Two', 'user2_1792062503217@test.com', 0, '+36306380377', '$2a$10$nPqlEBHwDLWG/3XC6I1WhOJm37qJIvqNpE/EBI9oFf8MBke2mjjXC', 0, 'BRONZE', 0, NULL, '2026-10-15 13:09:00', NULL, NULL),
+(9, 'Renamed Again', 'user1_1792177946769@test.com', 0, '+36201117679', '$2a$10$l8GIFUYth34t1aiEjvTeLuxu2KtV54ycZbOnK2Q671g2CAslnTA.G', 0, 'BRONZE', 1, '2026-10-16 21:12:32', '2026-10-16 21:12:29', '2026-10-16 21:12:32', NULL),
+(10, 'Test Two', 'user2_1792177946769@test.com', 0, '+36309863462', '$2a$10$OtpUeRTXnieF7gtN3ailneQA5UaybTOZ73JaYXVSIDMQkOTaRRCKy', 0, 'BRONZE', 1, '2026-10-16 21:12:32', '2026-10-16 21:12:29', '2026-10-16 21:12:32', NULL);
 
 -- --------------------------------------------------------
 
@@ -516,13 +523,13 @@ ALTER TABLE `reviews`
 -- AUTO_INCREMENT a táblához `services`
 --
 ALTER TABLE `services`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT a táblához `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT a táblához `user_tokens`
