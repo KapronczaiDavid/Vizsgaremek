@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: localhost:3306
--- Létrehozás ideje: 2026. Okt 15. 09:00
+-- Létrehozás ideje: 2026. Okt 16. 11:43
 -- Kiszolgáló verziója: 5.7.24
 -- PHP verzió: 8.3.1
 
@@ -27,6 +27,16 @@ DELIMITER $$
 --
 -- Eljárások
 --
+DROP PROCEDURE IF EXISTS `create_service`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_service` (IN `nameIN` VARCHAR(100), IN `descriptionIn` TEXT, IN `priceIn` INT(11), IN `durationMinutesIn` INT(11))   BEGIN
+ INSERT INTO services (name, description,price , duration_minutes)
+  VALUES (nameIn, descriptionIn, priceIn, durationMinutesIn);
+
+  SELECT id, name, description,price, duration_minutes, active,created_at, updated_at
+  FROM services
+  WHERE id = LAST_INSERT_ID();
+  END$$
+
 DROP PROCEDURE IF EXISTS `create_user`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `create_user` (IN `nameIn` VARCHAR(50), IN `emailIn` VARCHAR(100), IN `phoneIn` VARCHAR(20), IN `passwordIn` VARCHAR(255))   BEGIN
   INSERT INTO users (name, email, phone, password)
@@ -38,12 +48,20 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `create_user` (IN `nameIn` VARCHAR(5
   WHERE id = LAST_INSERT_ID();
 END$$
 
+DROP PROCEDURE IF EXISTS `deactivate_service`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `deactivate_service` (IN `idIn` INT(11))   UPDATE services
+SET active = false
+WHERE id = idIn AND active = true$$
+
 DROP PROCEDURE IF EXISTS `delete_user`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_user` (IN `idIn` INT)   BEGIN
-  UPDATE users
-  SET is_deleted = TRUE, deleted_at = NOW()
-  WHERE id = idIn AND is_deleted = FALSE;
-END$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_user` (IN `idIn` INT)   UPDATE users
+SET is_deleted = TRUE, deleted_at = NOW()
+WHERE id = idIn AND is_deleted = FALSE$$
+
+DROP PROCEDURE IF EXISTS `get_all_services`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_services` ()   SELECT id, name, description, price, duration_minutes, active, created_at, updated_at
+FROM services
+WHERE active = TRUE$$
 
 DROP PROCEDURE IF EXISTS `get_all_users`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_users` ()   SELECT id, name, email, email_verified, phone, password, xp_points,
@@ -51,11 +69,18 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_users` ()   SELECT id, name
 FROM users
 WHERE is_deleted = FALSE$$
 
+DROP PROCEDURE IF EXISTS `get_service_by_id`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_service_by_id` (IN `idIn` INT)   SELECT id, name, description, price, duration_minutes, active, created_at, updated_at
+FROM services
+WHERE active = TRUE And id = idIn$$
+
 DROP PROCEDURE IF EXISTS `get_user_by_email`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `get_user_by_email` ()   SELECT id, name, email, email_verified, phone, password, xp_points,
-       loyalty_level, is_deleted, deleted_at, created_at, updated_at
-FROM users
-WHERE email = emailIn AND is_deleted = FALSE$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_user_by_email` (IN `emailIn` VARCHAR(100))   BEGIN
+  SELECT id, name, email, email_verified, phone, password, xp_points,
+         loyalty_level, is_deleted, deleted_at, created_at, updated_at
+  FROM users
+  WHERE email = emailIn AND is_deleted = FALSE;
+END$$
 
 DROP PROCEDURE IF EXISTS `get_user_by_id`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_user_by_id` (IN `idIn` INT)   SELECT id, name, email, email_verified, phone, password, xp_points,
@@ -63,12 +88,15 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `get_user_by_id` (IN `idIn` INT)   S
 FROM users
 WHERE id = idIn AND is_deleted = FALSE$$
 
+DROP PROCEDURE IF EXISTS `update_service`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_service` (IN `idIn` INT(11), IN `nameIn` VARCHAR(100), IN `descriptionIn` TEXT, IN `priceIn` INT(11), IN `durationMinutesIn` INT(11))   UPDATE services
+SET name = nameIn, description = descriptionIn, price = priceIn,duration_minutes = durationMinutesIn
+WHERE id = idIn AND active = true$$
+
 DROP PROCEDURE IF EXISTS `update_user`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `update_user` (IN `idIn` INT, IN `nameIn` VARCHAR(50), IN `emailIn` VARCHAR(100), IN `phoneIn` VARCHAR(20))   BEGIN
-  UPDATE users
-  SET name = nameIn, email = emailIn, phone = phoneIn
-  WHERE id = idIn AND is_deleted = FALSE;
-END$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_user` (IN `idIn` INT(11), IN `nameIn` VARCHAR(50), IN `emailIn` VARCHAR(100), IN `phoneIn` VARCHAR(20))   UPDATE users
+SET name = nameIn, email = emailIn, phone = phoneIn
+WHERE id = idIn AND is_deleted = FALSE$$
 
 DELIMITER ;
 
@@ -214,6 +242,13 @@ CREATE TABLE `services` (
   `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- A tábla adatainak kiíratása `services`
+--
+
+INSERT INTO `services` (`id`, `name`, `description`, `price`, `duration_minutes`, `active`, `created_at`, `updated_at`) VALUES
+(1, 'Exterior wash', 'Basic exterior hand wash and dry', 5000, 30, 1, '2026-10-16 13:41:28', NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -245,7 +280,11 @@ INSERT INTO `users` (`id`, `name`, `email`, `email_verified`, `phone`, `password
 (1, 'Zoran', 'testemail@test.com', 0, '0620234453343', 'testpassword', 0, 'BRONZE', 0, NULL, '2026-10-13 10:32:55', NULL, NULL),
 (2, 'Zoran1', 'testemail1@test.com', 0, '+36202344533', '$2a$10$61dH7ji8T91YohUmKi1yDuCd3nAdUwQa15crV3GxxPWCiHP4iKcRy', 0, 'BRONZE', 1, '2026-10-14 11:35:14', '2026-10-14 13:25:28', '2026-10-14 13:35:13', NULL),
 (3, 'david', 'uglymail@test.com', 0, '+36202344523', '$2a$10$lICD369dgCqYp2fxN695LuiAcDjhniSYTcpZeh2hi1PtajgExhBj2', 0, 'BRONZE', 1, '2026-10-14 12:02:21', '2026-10-14 13:59:37', '2026-10-14 14:02:21', NULL),
-(4, 'ferenc', 'ferences@test.com', 0, '06204976687', '$2a$10$Ce31MK0X0.8kpLcq29Qcsu8LpxN3j.SUW5dOe8UrFbEgpdKSQSu0C', 0, 'BRONZE', 0, NULL, '2026-10-14 14:02:10', '2026-10-14 14:04:03', NULL);
+(4, 'ferenc', 'ferences@test.com', 0, '06204976687', '$2a$10$Ce31MK0X0.8kpLcq29Qcsu8LpxN3j.SUW5dOe8UrFbEgpdKSQSu0C', 0, 'BRONZE', 0, NULL, '2026-10-14 14:02:10', '2026-10-14 14:04:03', NULL),
+(5, 'kukirinn', 'kukirinn@test1.com', 0, '+36201111', '$2a$10$cJQDzfYlkHzzYg1tv/nHT.akMRhlnqRHeKoici/Hs7MpcnX3B9zF6', 0, 'BRONZE', 0, NULL, '2026-10-15 11:55:31', '2026-10-15 11:57:35', NULL),
+(6, 'kukirin20', 'kukirin22@test1.com', 0, '+362011122', '$2a$10$ct79RQcKhcWXZrMazIqL3ObZN.069OA2RbPisjwX8qJtPBsJY4NaO', 0, 'BRONZE', 0, NULL, '2026-10-15 12:28:29', NULL, NULL),
+(7, 'Test One', 'user1_1792062503217@test.com', 0, '+36204754012', '$2a$10$TsjO19aRl.e88ggeqTOg3uriA.MQEif7OckEXrcoIILU5uP8X8MW6', 0, 'BRONZE', 0, NULL, '2026-10-15 13:08:26', NULL, NULL),
+(8, 'Test Two', 'user2_1792062503217@test.com', 0, '+36306380377', '$2a$10$nPqlEBHwDLWG/3XC6I1WhOJm37qJIvqNpE/EBI9oFf8MBke2mjjXC', 0, 'BRONZE', 0, NULL, '2026-10-15 13:09:00', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -477,13 +516,13 @@ ALTER TABLE `reviews`
 -- AUTO_INCREMENT a táblához `services`
 --
 ALTER TABLE `services`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT a táblához `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT a táblához `user_tokens`
