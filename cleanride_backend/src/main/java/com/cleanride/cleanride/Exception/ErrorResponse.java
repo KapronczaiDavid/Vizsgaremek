@@ -1,4 +1,4 @@
-package com.cleanride.cleanride.Exception;
+package com.cleanride.cleanride.exception;
 
 import java.time.LocalDateTime;
 import java.util.Map;
