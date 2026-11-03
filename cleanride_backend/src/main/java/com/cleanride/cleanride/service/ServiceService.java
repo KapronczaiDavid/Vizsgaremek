@@ -52,9 +52,28 @@ public class ServiceService {
         findActiveService(id);
         serviceRepository.deactivateService(id);
     }
+    @Transactional
+    public ServiceResponse reactivateService(Integer id) {
+        Services service = serviceRepository.getServiceByIdAll(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Nincs ilyen szolgáltatás: " + id));
+
+        if (service.getActive()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "A szolgáltatás már aktív: " + id);
+        }
+
+        serviceRepository.reactivateService(id);
+        return getServiceById(id);   // most már aktív, így megtalálja
+    }
 
     public List<ServiceResponse> getAll() {
         return serviceRepository.getAllServices().stream()
+                .map(this::toResponseDto)
+                .toList();
+    }
+    public List<ServiceResponse> getAllActive() {
+        return serviceRepository.getAllActiveServices().stream()
                 .map(this::toResponseDto)
                 .toList();
     }

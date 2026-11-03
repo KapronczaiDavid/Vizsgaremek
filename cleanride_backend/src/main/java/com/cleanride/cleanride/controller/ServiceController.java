@@ -24,12 +24,20 @@ public class ServiceController {
         return ResponseEntity.status(HttpStatus.CREATED).body(serviceService.createService(request));
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public List<ServiceResponse> getAll() {
         return serviceService.getAll();
     }
+    @GetMapping
+    public List<ServiceResponse> getAllActive() {
+        return serviceService.getAllActive();
+    }
     @GetMapping("/{id}")
     public ServiceResponse getServiceById (@PathVariable Integer id) {return serviceService.getServiceById(id);
+    }
+    @PutMapping("/{id}/reactivate")
+    public ServiceResponse reactivateService(@PathVariable Integer id) {
+        return serviceService.reactivateService(id);
     }
     @PutMapping("/{id}")
     public ServiceResponse updateService(@PathVariable Integer id,

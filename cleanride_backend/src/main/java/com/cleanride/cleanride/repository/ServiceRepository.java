@@ -22,8 +22,14 @@ public interface ServiceRepository extends JpaRepository<Services, Integer> {
     @Query(value = "CALL get_all_services()", nativeQuery = true)
     List<Services> getAllServices();
 
+    @Query(value = "CALL get_all_active_services()", nativeQuery = true)
+    List<Services> getAllActiveServices();
+
     @Query(value = "CALL get_service_by_id(:id)", nativeQuery = true)
     Optional<Services> getServiceById(@Param("id") Integer id);
+
+    @Query(value = "CALL get_service_by_id_all(:id)", nativeQuery = true)
+    Optional<Services> getServiceByIdAll(@Param("id") Integer id);
 
     @Modifying(clearAutomatically = true)
     @Query(value = "CALL update_service(:id,:name,:description, :price, :durationMinutes)", nativeQuery = true)
@@ -33,5 +39,9 @@ public interface ServiceRepository extends JpaRepository<Services, Integer> {
     @Modifying(clearAutomatically = true)
     @Query(value = "CALL deactivate_service(:id)", nativeQuery = true)
     void deactivateService(@Param("id") Integer id);
+
+    @Modifying(clearAutomatically = true)
+    @Query(value = "CALL reactivate_service(:id)", nativeQuery = true)
+    void reactivateService(@Param("id") Integer id);
 
 }

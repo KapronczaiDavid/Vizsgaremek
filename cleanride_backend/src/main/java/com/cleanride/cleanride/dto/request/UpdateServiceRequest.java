@@ -26,7 +26,4 @@ public class UpdateServiceRequest {
     @NotNull(message = "átlagos becsült idö megadása kötelező")
     @Min(value = 1, message = "az időtartam legalább 1 perc legyen")
     private Integer durationMinutes;
-
-    @NotNull(message = "az aktív állapot megadása kötelező")
-    private Boolean active;
 }
