@@ -1,38 +1,113 @@
 package com.cleanride.cleanride.repository;
 
 import com.cleanride.cleanride.entity.Users;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.ParameterMode;
+import jakarta.persistence.StoredProcedureQuery;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface UsersRepository extends JpaRepository<Users, Integer> {
+@Repository
+@RequiredArgsConstructor
+@SuppressWarnings("unchecked")
+public class    UsersRepository {
 
-    boolean existsByEmail(String email);
-    boolean existsByPhone(String phone);
+    private final EntityManager entityManager;
 
-    @Query(value = "CALL create_user(:name, :email, :phone, :hash)", nativeQuery = true)
-    Users createUser(@Param("name") String name, @Param("email") String email,
-                         @Param("phone") String phone, @Param("hash") String hash);
+    public boolean existsByEmail(String email) {
+        StoredProcedureQuery query =
+                entityManager.createStoredProcedureQuery("exists_user_by_email");
 
-    @Query(value = "CALL get_all_users()", nativeQuery = true)
-    List<Users> getAllUsers();
+        query.registerStoredProcedureParameter(1, String.class, ParameterMode.IN);
+        query.setParameter(1, email);
 
-    @Query(value = "CALL get_user_by_id(:id)", nativeQuery = true)
-    Optional<Users> getUserById(@Param("id") Integer id);
+        List<Object> result = query.getResultList();
+        return ((Number) result.getFirst()).longValue() > 0;
+    }
 
-    @Query(value = "CALL get_user_by_email(:email)", nativeQuery = true)
-    Optional<Users> getUserByEmail(@Param("email") String email);
+    public boolean existsByPhone(String phone) {
+        StoredProcedureQuery query =
+                entityManager.createStoredProcedureQuery("exists_user_by_phone");
 
-    @Modifying(clearAutomatically = true)
-    @Query(value = "CALL update_user(:id, :name, :email, :phone)", nativeQuery = true)
-    void updateUser(@Param("id") Integer id, @Param("name") String name,
-                        @Param("email") String email, @Param("phone") String phone);
+        query.registerStoredProcedureParameter(1, String.class, ParameterMode.IN);
+        query.setParameter(1, phone);
 
-    @Modifying(clearAutomatically = true)
-    @Query(value = "CALL delete_user(:id)", nativeQuery = true)
-    void deleteUser(@Param("id") Integer id);
+        List<Object> result = query.getResultList();
+        return ((Number) result.getFirst()).longValue() > 0;
+    }
+
+    public Users createUser(String name, String email,
+                            String phone, String password) {
+        StoredProcedureQuery query =
+                entityManager.createStoredProcedureQuery("create_user", Users.class);
+
+        query.registerStoredProcedureParameter(1, String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter(2, String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter(3, String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter(4, String.class, ParameterMode.IN);
+
+        query.setParameter(1, name);
+        query.setParameter(2, email);
+        query.setParameter(3, phone);
+        query.setParameter(4, password);
+
+        List<Users> result = query.getResultList();
+        return result.getFirst();
+    }
+
+    public List<Users> getAllUsers() {
+        StoredProcedureQuery query =
+                entityManager.createStoredProcedureQuery("get_all_users", Users.class);
+        return query.getResultList();
+    }
+
+    public Optional<Users> getUserById(Integer id) {
+        StoredProcedureQuery query =
+                entityManager.createStoredProcedureQuery("get_user_by_id", Users.class);
+        query.registerStoredProcedureParameter(1, Integer.class, ParameterMode.IN);
+        query.setParameter(1, id);
+        List<Users> result = query.getResultList();
+        return result.stream().findFirst();
+    }
+
+    public Optional<Users> getUserByEmail(String email) {
+        StoredProcedureQuery query =
+                entityManager.createStoredProcedureQuery("get_user_by_email", Users.class);
+        query.registerStoredProcedureParameter(1, String.class, ParameterMode.IN);
+        query.setParameter(1, email);
+        List<Users> result = query.getResultList();
+        return result.stream().findFirst();
+    }
+
+    public void updateUser(Integer id, String name, String email, String phone) {
+        StoredProcedureQuery query =
+                entityManager.createStoredProcedureQuery("update_user");
+
+        query.registerStoredProcedureParameter(1, Integer.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter(2, String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter(3, String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter(4, String.class, ParameterMode.IN);
+
+        query.setParameter(1, id);
+        query.setParameter(2, name);
+        query.setParameter(3, email);
+        query.setParameter(4, phone);
+
+        query.execute();
+        entityManager.clear();
+    }
+
+    public void deleteUser(Integer id) {
+        StoredProcedureQuery query =
+                entityManager.createStoredProcedureQuery("delete_user");
+
+        query.registerStoredProcedureParameter(1, Integer.class, ParameterMode.IN);
+        query.setParameter(1, id);
+
+        query.execute();
+        entityManager.clear();
+    }
 }
