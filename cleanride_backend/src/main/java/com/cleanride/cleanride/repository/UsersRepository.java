@@ -19,7 +19,7 @@ public class    UsersRepository {
 
     public boolean existsByEmail(String email) {
         StoredProcedureQuery query =
-                entityManager.createStoredProcedureQuery("exists_user_by_email");
+                entityManager.createStoredProcedureQuery("exists_by_user_email");
 
         query.registerStoredProcedureParameter(1, String.class, ParameterMode.IN);
         query.setParameter(1, email);

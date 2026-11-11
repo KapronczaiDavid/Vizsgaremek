@@ -48,7 +48,7 @@ public class VehicleService {
     private Vehicle findVehicle(Integer id) {
         return vehicleRepository.getVehicleById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Nincs ilyen jármű: " + id));
+                        "Nincs ilyen jármű id: " + id));
     }
 
 
