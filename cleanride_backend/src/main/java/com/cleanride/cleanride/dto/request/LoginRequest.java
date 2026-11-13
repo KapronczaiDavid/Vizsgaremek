@@ -21,4 +21,5 @@ public class LoginRequest {
     @Email(message = "Az email nem érvényes")
     private String email;
 
+    private String token;
     }

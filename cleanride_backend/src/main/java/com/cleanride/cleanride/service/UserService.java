@@ -6,6 +6,8 @@ import com.cleanride.cleanride.dto.request.UpdateUserRequest;
 import com.cleanride.cleanride.dto.response.UserResponse;
 import com.cleanride.cleanride.entity.Users;
 import com.cleanride.cleanride.repository.UsersRepository;
+import com.cleanride.cleanride.security.JwtAuthFilter;
+import com.cleanride.cleanride.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,6 +23,7 @@ public class UserService {
 
     private final UsersRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
@@ -61,8 +64,8 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                     "Hibás email vagy jelszó");
         }
-
-        return toResponseDto(user);
+        String token = jwtService.generateToken(user.getId(), "CUSTOMER");
+        return toResponseDto(user, token);
     }
 
     @Transactional
@@ -97,13 +100,17 @@ public class UserService {
     }
 
     private UserResponse toResponseDto(Users user) {
+        return toResponseDto(user, null);
+    }
+
+    private UserResponse toResponseDto(Users user, String token) {
         return UserResponse.builder()
                 .id(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
                 .phone(user.getPhone())
                 .loyaltyLevel(user.getLoyaltyLevel())
+                .token(token)
                 .build();
     }
 }
-

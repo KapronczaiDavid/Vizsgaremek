@@ -19,24 +19,19 @@ public class    UsersRepository {
 
     public boolean existsByEmail(String email) {
         StoredProcedureQuery query =
-                entityManager.createStoredProcedureQuery("exists_by_user_email");
-
+                entityManager.createStoredProcedureQuery("exists_by_user_email", Users.class);
         query.registerStoredProcedureParameter(1, String.class, ParameterMode.IN);
         query.setParameter(1, email);
-
-        List<Object> result = query.getResultList();
-        return ((Number) result.getFirst()).longValue() > 0;
+        List<Users> result = query.getResultList();
+        return result.stream().findFirst().isPresent();
     }
-
     public boolean existsByPhone(String phone) {
         StoredProcedureQuery query =
-                entityManager.createStoredProcedureQuery("exists_user_by_phone");
-
+                entityManager.createStoredProcedureQuery("exists_by_user_phone", Users.class);
         query.registerStoredProcedureParameter(1, String.class, ParameterMode.IN);
         query.setParameter(1, phone);
-
-        List<Object> result = query.getResultList();
-        return ((Number) result.getFirst()).longValue() > 0;
+        List<Users> result = query.getResultList();
+        return result.stream().findFirst().isPresent();
     }
 
     public Users createUser(String name, String email,
