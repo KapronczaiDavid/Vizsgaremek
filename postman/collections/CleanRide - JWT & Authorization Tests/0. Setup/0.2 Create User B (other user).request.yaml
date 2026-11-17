@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{baseUrl}}/api/users"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: '{"name":"User B","email":"{{emailB}}","phone":"{{phoneB}}","password":"secret123"}'
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('status is 201', () => pm.response.to.have.status(201));
+      pm.collectionVariables.set('userBId', pm.response.json().id);
+    language: text/javascript
+order: 2000

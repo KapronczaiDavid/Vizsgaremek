@@ -1,0 +1,3 @@
+$kind: collection
+name: "3. Self-service: /api/me"
+order: 4000

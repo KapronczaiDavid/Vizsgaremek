@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/services/{{serviceId}}"
+method: PUT
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{adminToken}}
+body:
+  type: json
+  content: '{"name":"Updated Wash","description":"updated by test","price":20,"durationMinutes":50}'
+scripts:
+  - type: afterResponse
+    code: pm.test('status is 200', () => pm.response.to.have.status(200));
+    language: text/javascript
+order: 4000

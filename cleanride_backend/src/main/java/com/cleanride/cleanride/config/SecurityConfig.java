@@ -25,8 +25,11 @@ public class SecurityConfig {
             http
                     .csrf(csrf -> csrf.disable())
                     .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                    .exceptionHandling(e -> e.authenticationEntryPoint(
-                            new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                    .exceptionHandling(e -> e
+                            .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                            .accessDeniedHandler((request, response, accessDeniedException) ->
+                                    response.setStatus(HttpStatus.FORBIDDEN.value()))
+                    )
                     .authorizeHttpRequests(auth -> auth
                             .requestMatchers(HttpMethod.POST, "/api/users/login").permitAll()
                             .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
@@ -38,6 +41,8 @@ public class SecurityConfig {
                             .requestMatchers(HttpMethod.DELETE, "/api/services/**").hasRole("ADMIN")
                             .requestMatchers("/api/users/**").hasRole("ADMIN")
                             .requestMatchers("/api/me/**").authenticated()
+                            .requestMatchers(HttpMethod.GET, "/api/me").hasRole("CUSTOMER")
+                            .requestMatchers(HttpMethod.PUT, "/api/me").hasRole("CUSTOMER")
                             .anyRequest().authenticated()
                     )
 

@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{baseUrl}}/api/admins/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: '{"email":"{{adminEmail}}","password":"{{adminPassword}}"}'
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('status is 200 (check adminEmail/adminPassword collection variables if this fails)', () => pm.response.to.have.status(200));
+      const j = pm.response.json();
+      pm.test('token present', () => pm.expect(j.token).to.be.a('string').and.not.empty);
+      pm.collectionVariables.set('adminToken', j.token);
+    language: text/javascript
+order: 5000

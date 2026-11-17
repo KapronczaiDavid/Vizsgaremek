@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 
@@ -44,8 +45,6 @@ public class UsersController {
                                    @Valid @RequestBody UpdateUserRequest request) {
         return userService.updateUser(id, request);
     }
-
-
     @DeleteMapping("/{id}")
     public void softDelete(@PathVariable Integer id) {
         userService.softDelete(id);

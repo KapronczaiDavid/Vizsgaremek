@@ -44,7 +44,8 @@ public class JwtService {
         try {
             parse(token);
             return true;
-        } catch (JwtException | IllegalArgumentException e) {
+        } catch (Exception e) {
+            System.out.println("JWT VALIDATION FAILED: " + e.getClass().getSimpleName() + " - " + e.getMessage());
             return false;
         }
     }

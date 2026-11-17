@@ -62,29 +62,33 @@ public class VehicleService {
     }
 
     @Transactional
-    public VehicleResponse updateVehicle(Integer id, UpdateVehicleRequest request) {
+    public VehicleResponse updateVehicle(Integer id, Integer callerId, UpdateVehicleRequest r) {
         Vehicle vehicle = findVehicle(id);
 
-        if (!Objects.equals(vehicle.getLicensePlate(), request.getLicensePlate())
-                && request.getLicensePlate() != null
-                && vehicleRepository.existsByLicensePlate(request.getLicensePlate())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Ez a rendszám már használatban van: " + request.getLicensePlate());
+        if (!vehicle.getUserId().equals(callerId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ez nem a te járműved");
         }
 
-        vehicleRepository.updateVehicle(
-                id,
-                request.getBrand(),
-                request.getLicensePlate(),
-                request.getVehicleType());
+        if (!Objects.equals(vehicle.getLicensePlate(), r.getLicensePlate())
+                && r.getLicensePlate() != null
+                && vehicleRepository.existsByLicensePlate(r.getLicensePlate())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Ez a rendszám már használatban van: " + r.getLicensePlate());
+        }
 
+        vehicleRepository.updateVehicle(id, r.getBrand(), r.getLicensePlate(), r.getVehicleType());
         return getVehicleById(id);
     }
 
 
     @Transactional
-    public void deleteVehicle(Integer id) {
-        findVehicle(id);
+    public void deleteVehicle(Integer id, Integer callerId) {
+        Vehicle vehicle = findVehicle(id);
+
+        if (!vehicle.getUserId().equals(callerId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ez nem a te járműved");
+        }
+
         vehicleRepository.deleteVehicle(id);
     }
 }

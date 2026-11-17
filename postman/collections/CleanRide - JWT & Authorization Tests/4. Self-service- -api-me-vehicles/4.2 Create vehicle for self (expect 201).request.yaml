@@ -1,0 +1,16 @@
+$kind: http-request
+url: "{{baseUrl}}/api/me/vehicles"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenA}}
+body:
+  type: json
+  content: '{"brand":"bmw","licensePlate":"{{plateA}}","vehicleType":"sedan"}'
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('status is 201', () => pm.response.to.have.status(201));
+      pm.collectionVariables.set('vehicleIdA', pm.response.json().id);
+    language: text/javascript
+order: 2000

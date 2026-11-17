@@ -1,0 +1,18 @@
+$kind: collection
+description: Tests for login/token issuing, admin-only endpoints, /api/me self-service endpoints, and vehicle ownership checks. Fill in adminEmail/adminPassword collection variables before running folder 0.
+variables:
+  baseUrl: http://localhost:8080
+  adminEmail: ""
+  adminPassword: ""
+  emailA: ""
+  emailB: ""
+  phoneA: ""
+  phoneB: ""
+  userAId: ""
+  userBId: ""
+  tokenA: ""
+  tokenB: ""
+  adminToken: ""
+  plateA: ""
+  vehicleIdA: ""
+  serviceId: ""

@@ -1,0 +1,13 @@
+# Use this workspace to collaborate
+workspace:
+  id: f7893d92-52f0-4edc-8115-cf68d1d63dd0
+
+cloudResources:
+  collections:
+    ../postman/collections/CleanRide - JWT & Authorization Tests: 6889716b-2cc8-483f-b7e7-9d5b127cada2
+
+# All resources in the `postman/` folder are automatically registered in Local View.
+# Point to additional files outside the `postman/` folder to register them individually. Example:
+#localResources:
+#  collections:
+#    - ../tests/E2E Test Collection/

@@ -1,0 +1,24 @@
+$kind: http-request
+url: "{{baseUrl}}/api/users"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: '{"name":"User A","email":"{{emailA}}","phone":"{{phoneA}}","password":"secret123"}'
+scripts:
+  - type: beforeRequest
+    code: |-
+      const t = Date.now();
+      const rnd = () => String(Math.floor(1000000 + Math.random() * 8999999));
+      pm.collectionVariables.set('emailA', `userA_${t}@test.com`);
+      pm.collectionVariables.set('emailB', `userB_${t}@test.com`);
+      pm.collectionVariables.set('phoneA', '+3620' + rnd());
+      pm.collectionVariables.set('phoneB', '+3630' + rnd());
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test('status is 201', () => pm.response.to.have.status(201));
+      pm.collectionVariables.set('userAId', pm.response.json().id);
+    language: text/javascript
+order: 1000

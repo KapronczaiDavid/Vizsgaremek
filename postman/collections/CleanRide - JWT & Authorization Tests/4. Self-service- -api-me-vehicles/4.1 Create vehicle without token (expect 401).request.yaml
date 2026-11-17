@@ -1,0 +1,18 @@
+$kind: http-request
+url: "{{baseUrl}}/api/me/vehicles"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: '{"brand":"bmw","licensePlate":"{{plateA}}","vehicleType":"sedan"}'
+scripts:
+  - type: beforeRequest
+    code: |-
+      const rnd = () => String(Math.floor(100 + Math.random() * 899));
+      pm.collectionVariables.set('plateA', 'TST-' + rnd());
+    language: text/javascript
+  - type: afterResponse
+    code: pm.test('status is 401', () => pm.response.to.have.status(401));
+    language: text/javascript
+order: 1000

@@ -19,7 +19,7 @@ public class ServiceRepository{
 
     public boolean existsByName(String name) {
         StoredProcedureQuery query =
-                entityManager.createStoredProcedureQuery("exists_service_by_name");
+                entityManager.createStoredProcedureQuery("exists_by_service_name");
 
         query.registerStoredProcedureParameter(1, String.class, ParameterMode.IN);
         query.setParameter(1, name);

@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,19 +26,41 @@ public class VehicleController {
     }
 
     @GetMapping("/vehicles/{id}")
-    public VehicleResponse getVehicleById (@PathVariable Integer id) {return vehicleService.getVehicleById(id);
+    public VehicleResponse getVehicleById(@PathVariable Integer id) {
+        return vehicleService.getVehicleById(id);
     }
+
+    @GetMapping("/me/vehicles")
+    public List<VehicleResponse> getMyVehicles(Authentication authentication) {
+        Integer userId = (Integer) authentication.getPrincipal();
+        return vehicleService.getVehiclesByUser(userId);
+    }
+
+    @PostMapping("/me/vehicles")
+    public ResponseEntity<VehicleResponse> createMyVehicle(Authentication authentication,
+                                                           @Valid @RequestBody CreateVehicleRequest request) {
+        Integer userId = (Integer) authentication.getPrincipal();
+        VehicleResponse response = vehicleService.createVehicle(userId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
     @GetMapping("/users/{userId}/vehicles")
     public List<VehicleResponse> getVehiclesByUser(@PathVariable Integer userId) {
         return vehicleService.getVehiclesByUser(userId);
     }
+
     @PutMapping("/vehicles/{id}")
     public VehicleResponse updateVehicle(@PathVariable Integer id,
+                                         Authentication authentication,
                                          @Valid @RequestBody UpdateVehicleRequest request) {
-        return vehicleService.updateVehicle(id, request);
+        Integer callerId = (Integer) authentication.getPrincipal();
+        return vehicleService.updateVehicle(id, callerId, request);
     }
+
     @DeleteMapping("/vehicles/{id}")
-    public void deleteVehicle(@PathVariable Integer id) {
-        vehicleService.deleteVehicle(id);
+    public ResponseEntity<Void> deleteVehicle(@PathVariable Integer id, Authentication authentication) {
+        Integer callerId = (Integer) authentication.getPrincipal();
+        vehicleService.deleteVehicle(id, callerId);
+        return ResponseEntity.noContent().build();
     }
 }

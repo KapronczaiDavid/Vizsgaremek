@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/services/{{serviceId}}"
+method: PUT
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenA}}
+body:
+  type: json
+  content: '{"name":"Hacked Name","description":"x","price":1,"durationMinutes":10}'
+scripts:
+  - type: afterResponse
+    code: pm.test('status is 403', () => pm.response.to.have.status(403));
+    language: text/javascript
+order: 3000

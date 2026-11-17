@@ -1,0 +1,16 @@
+$kind: http-request
+url: "{{baseUrl}}/api/services"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{adminToken}}
+body:
+  type: json
+  content: '{"name":"Test Wash {{$timestamp}}","description":"created by test","price":15,"durationMinutes":45}'
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('status is 201', () => pm.response.to.have.status(201));
+      pm.collectionVariables.set('serviceId', pm.response.json().id);
+    language: text/javascript
+order: 2000
