@@ -32,7 +32,6 @@ import java.time.LocalDateTime;
         @Column(name = "phone", nullable = false, length = 20, unique = true)
         private String phone;
 
-        // A jelszót mindig BCrypt hash-ként tároljuk, soha nyers szövegként
         @Column(name = "password", nullable = false, length = 255)
         private String passwordHash;
 

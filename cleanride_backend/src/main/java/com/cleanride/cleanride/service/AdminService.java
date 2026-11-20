@@ -21,6 +21,7 @@ public class AdminService {
     private final AdminRepository adminRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final AuthTokenService authTokenService;
     @Transactional
     public AdminResponse login(LoginRequest request) {
         Admin admin = adminRepository.getAdminByEmail(request.getEmail())
@@ -31,8 +32,8 @@ public class AdminService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                     "Hibás email vagy jelszó");
         }
-        String token = jwtService.generateToken(admin.getId(), "ADMIN");   // <-- add
-
+        String token = jwtService.generateToken(admin.getId(), "ADMIN");
+        authTokenService.saveSession(token, null, admin.getId());
         return toResponseDto(admin, token);
     }
     private AdminResponse toResponseDto(Admin admin, String token) {

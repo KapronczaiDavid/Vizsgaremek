@@ -24,6 +24,7 @@ public class UserService {
     private final UsersRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final AuthTokenService authTokenService;
 
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
@@ -65,6 +66,7 @@ public class UserService {
                     "Hibás email vagy jelszó");
         }
         String token = jwtService.generateToken(user.getId(), "CUSTOMER");
+        authTokenService.saveSession(token, user.getId(), null);
         return toResponseDto(user, token);
     }
 

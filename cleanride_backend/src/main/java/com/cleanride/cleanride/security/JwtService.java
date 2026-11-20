@@ -25,6 +25,7 @@ public class JwtService {
     public String generateToken(Integer id, String role) {
         Date now = new Date();
         return Jwts.builder()
+                .setId(java.util.UUID.randomUUID().toString())
                 .setSubject(String.valueOf(id))
                 .claim("role", role)
                 .setIssuedAt(now)
