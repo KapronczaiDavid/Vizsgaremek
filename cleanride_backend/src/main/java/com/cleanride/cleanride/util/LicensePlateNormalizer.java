@@ -17,7 +17,6 @@ public final class LicensePlateNormalizer {
     private LicensePlateNormalizer() {
     }
 
-    /** null -> null. Egyébként BETŰK-SZÁMOK alakot ad, vagy 400-as hibát dob. */
     public static String normalize(String raw) {
         if (raw == null) {
             return null;

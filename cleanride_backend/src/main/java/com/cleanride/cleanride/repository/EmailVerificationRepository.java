@@ -65,7 +65,6 @@ public class EmailVerificationRepository {
                 ((Number) r[2]).intValue()));
     }
 
-    /** true = an attempt was consumed, false = the token has no attempts left. */
     public boolean consumeAttempt(Integer tokenId, int maxAttempts) {
         StoredProcedureQuery query =
                 entityManager.createStoredProcedureQuery("consume_token_attempt");
@@ -76,7 +75,6 @@ public class EmailVerificationRepository {
         return firstScalarAsLong(query.getResultList()) > 0;
     }
 
-    /** true = this call marked it used, false = it was already used. */
     public boolean markUsed(Integer tokenId, LocalDateTime now) {
         StoredProcedureQuery query = entityManager.createStoredProcedureQuery("mark_token_used");
         query.registerStoredProcedureParameter(1, Integer.class, ParameterMode.IN);
@@ -104,7 +102,6 @@ public class EmailVerificationRepository {
         return new SendStats(((Number) r[0]).longValue(), ((Number) r[1]).longValue());
     }
 
-    // A single-column result may come back as a bare value or as a 1-element array.
     private long firstScalarAsLong(List<?> rows) {
         if (rows.isEmpty()) {
             return 0;

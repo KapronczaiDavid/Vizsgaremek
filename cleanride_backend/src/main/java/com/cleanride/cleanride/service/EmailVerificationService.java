@@ -23,17 +23,7 @@ import java.time.ZoneOffset;
 import java.util.HexFormat;
 import java.util.Optional;
 
-/**
- * Email verification with a 6-digit code.
- *
- * Rules:
- *  - a new code invalidates every older code of the user
- *  - max 5 attempts per code (consumed atomically in the DB)
- *  - 60 s cooldown between sends
- *  - max 5 sends per hour per account (the registration email counts as the first)
- *
- * All timestamps are UTC and generated in Java (see the note in the SQL file).
- */
+
 @Service
 @RequiredArgsConstructor
 public class EmailVerificationService {
@@ -55,16 +45,10 @@ public class EmailVerificationService {
     @Value("${verification.max-sends-per-hour:5}")
     private int maxSendsPerHour;
 
-    /** Called right after registration. */
     @Transactional
     public void sendInitialCode(Users user) {
         issueCode(user, utcNow());
     }
-
-    /**
-     * Resend. Unknown or already verified emails are silently ignored (204),
-     * so this endpoint does not tell anyone more than registration already does.
-     */
     @Transactional(noRollbackFor = ResponseStatusException.class)
     public void resend(String email) {
         Optional<Users> found = users.getUserByEmail(email);
@@ -87,12 +71,6 @@ public class EmailVerificationService {
         }
         issueCode(user, now);
     }
-
-    /**
-     * IMPORTANT: noRollbackFor is required. Every wrong guess throws a
-     * ResponseStatusException; without it the transaction would roll back and
-     * the consumed attempt would be lost, i.e. unlimited guesses.
-     */
     @Transactional(noRollbackFor = ResponseStatusException.class)
     public void verify(String email, String code) {
         Users user = users.getUserByEmail(email)
@@ -109,7 +87,6 @@ public class EmailVerificationService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "A kód lejárt vagy nem létezik, kérj új kódot"));
 
-        // Count the attempt BEFORE comparing, atomically: attempts < max is checked in SQL.
         if (!tokens.consumeAttempt(token.id(), maxAttempts)) {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
                     "Elfogytak a próbálkozások, kérj új kódot");

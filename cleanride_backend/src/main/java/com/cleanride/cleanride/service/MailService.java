@@ -23,10 +23,6 @@ import java.nio.charset.StandardCharsets;
 public class MailService {
 
     private final JavaMailSender mailSender;
-
-    // The email design lives in src/main/resources/mail/verification-email.html
-    // (placeholders: {{name}}, {{code}}, {{ttl}}). Loaded once at startup, so a
-    // missing file fails fast instead of at the first registration.
     private final String htmlTemplate = readResource("mail/verification-email.html");
 
     @Value("${spring.mail.username}")
