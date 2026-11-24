@@ -1,0 +1,20 @@
+$kind: http-request
+name: 15 Update vehicle 2 to vehicle 1's plate -> 409
+url: "{{baseUrl}}/api/vehicles/{{vehicle2Id}}"
+method: PUT
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{customerToken}}
+body:
+  type: text
+  content: |-
+    {
+      "brand": "fiat",
+      "licensePlate": "{{plate}}",
+      "vehicleType": "van"
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test("409", () => pm.response.to.have.status(409));
+    language: text/javascript
+order: 15000

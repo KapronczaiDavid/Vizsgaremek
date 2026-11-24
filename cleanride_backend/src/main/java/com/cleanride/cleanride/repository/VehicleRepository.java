@@ -22,13 +22,13 @@ public class VehicleRepository {
 
     public boolean existsByLicensePlate(String licensePlate) {
         StoredProcedureQuery query =
-                entityManager.createStoredProcedureQuery("exists_by_licenseplate");
+                entityManager.createStoredProcedureQuery("exists_by_licenseplate", Vehicle.class);
 
         query.registerStoredProcedureParameter(1, String.class, ParameterMode.IN);
         query.setParameter(1, licensePlate);
 
-        List<Object> result = query.getResultList();
-        return ((Number) result.getFirst()).longValue() > 0;
+        List<Vehicle> result = query.getResultList();
+        return result.stream().findFirst().isPresent();
     }
     public Vehicle createVehicle(Integer userId, VehicleBrand brand,
                                  String licensePlate, VehicleType vehicleType) {

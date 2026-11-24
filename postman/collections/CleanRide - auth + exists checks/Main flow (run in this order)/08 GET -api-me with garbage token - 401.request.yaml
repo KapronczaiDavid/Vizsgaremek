@@ -1,0 +1,14 @@
+$kind: http-request
+name: 08 GET /api/me with garbage token -> 401
+url: "{{baseUrl}}/api/me"
+method: GET
+headers:
+  Authorization: Bearer {{garbageToken}}
+scripts:
+  - type: beforeRequest
+    code: pm.collectionVariables.set("garbageToken", "abc.def.ghi");
+    language: text/javascript
+  - type: afterResponse
+    code: pm.test("401", () => pm.response.to.have.status(401));
+    language: text/javascript
+order: 8000

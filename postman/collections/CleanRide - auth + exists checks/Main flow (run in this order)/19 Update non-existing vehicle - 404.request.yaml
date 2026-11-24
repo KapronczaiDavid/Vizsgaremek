@@ -1,0 +1,20 @@
+$kind: http-request
+name: 19 Update non-existing vehicle -> 404
+url: "{{baseUrl}}/api/vehicles/999999"
+method: PUT
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{customerToken}}
+body:
+  type: text
+  content: |-
+    {
+      "brand": "bmw",
+      "licensePlate": "NOPE-1",
+      "vehicleType": "sedan"
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test("404", () => pm.response.to.have.status(404));
+    language: text/javascript
+order: 19000

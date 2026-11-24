@@ -1,0 +1,25 @@
+$kind: http-request
+name: 14 Create 2nd vehicle -> 201
+url: "{{baseUrl}}/api/me/vehicles"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{customerToken}}
+body:
+  type: text
+  content: |-
+    {
+      "brand": "fiat",
+      "licensePlate": "{{plate2}}",
+      "vehicleType": "van"
+    }
+scripts:
+  - type: beforeRequest
+    code: pm.collectionVariables.set("plate2", "PM-" + String(Date.now()).slice(-6) + "B");
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test("200/201", () => pm.expect(pm.response.code).to.be.oneOf([200,201]));
+      pm.collectionVariables.set("vehicle2Id", pm.response.json().id);
+    language: text/javascript
+order: 14000

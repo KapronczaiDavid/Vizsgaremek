@@ -1,0 +1,22 @@
+$kind: http-request
+name: 17 Update vehicle 2 keeping its own plate -> 200
+url: "{{baseUrl}}/api/vehicles/{{vehicle2Id}}"
+method: PUT
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{customerToken}}
+body:
+  type: text
+  content: |-
+    {
+      "brand": "ford",
+      "licensePlate": "{{plate3}}",
+      "vehicleType": "sedan"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("200 (own plate is not a conflict)", () => pm.response.to.have.status(200));
+      pm.test("type changed", () => pm.expect(pm.response.json().vehicleType).to.eql("sedan"));
+    language: text/javascript
+order: 17000

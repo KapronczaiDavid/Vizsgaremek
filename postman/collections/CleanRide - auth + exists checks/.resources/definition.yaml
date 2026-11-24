@@ -1,0 +1,14 @@
+$kind: collection
+description: ""
+variables:
+  baseUrl: http://localhost:8080
+  adminEmail: admin@cleanride.hu
+  adminPassword: CHANGE_ME
+  customerToken: ""
+  customerId: ""
+  custEmail: ""
+  custPhone: ""
+  custPassword: ""
+  adminToken: ""
+  plate2: ""
+  vehicle2Id: ""

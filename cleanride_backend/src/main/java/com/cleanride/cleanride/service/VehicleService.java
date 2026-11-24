@@ -5,6 +5,7 @@ import com.cleanride.cleanride.dto.request.UpdateVehicleRequest;
 import com.cleanride.cleanride.dto.response.VehicleResponse;
 import com.cleanride.cleanride.entity.Vehicle;
 import com.cleanride.cleanride.repository.VehicleRepository;
+import com.cleanride.cleanride.util.LicensePlateNormalizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -24,10 +25,17 @@ public class VehicleService {
     public VehicleResponse createVehicle(Integer userId, CreateVehicleRequest request) {
         userService.getById(userId);
 
+        String plate = LicensePlateNormalizer.normalize(request.getLicensePlate());
+
+        if (plate != null && vehicleRepository.existsByLicensePlate(plate)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Ez a rendszám már használatban van: " + plate);
+        }
+
         Vehicle saved = vehicleRepository.createVehicle(
                 userId,
                 request.getBrand(),
-                request.getLicensePlate(),
+                plate,
                 request.getVehicleType());
 
         return toResponseDto(saved);
@@ -69,14 +77,16 @@ public class VehicleService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ez nem a te járműved");
         }
 
-        if (!Objects.equals(vehicle.getLicensePlate(), r.getLicensePlate())
-                && r.getLicensePlate() != null
-                && vehicleRepository.existsByLicensePlate(r.getLicensePlate())) {
+        String newPlate = LicensePlateNormalizer.normalize(r.getLicensePlate());
+
+        if (newPlate != null
+                && !Objects.equals(vehicle.getLicensePlate(), newPlate)
+                && vehicleRepository.existsByLicensePlate(newPlate)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Ez a rendszám már használatban van: " + r.getLicensePlate());
+                    "Ez a rendszám már használatban van: " + newPlate);
         }
 
-        vehicleRepository.updateVehicle(id, r.getBrand(), r.getLicensePlate(), r.getVehicleType());
+        vehicleRepository.updateVehicle(id, r.getBrand(), newPlate, r.getVehicleType());
         return getVehicleById(id);
     }
 

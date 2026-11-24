@@ -1,0 +1,12 @@
+$kind: http-request
+name: 21 GET /api/me with the REVOKED token -> 401
+description: "Run AFTER the main folder. First in phpMyAdmin (cleanride DB): UPDATE auth_tokens SET used_at = NOW() WHERE user_id = <customerId> AND type = 'session'; (customerId is the collection variable). Then send this request: the JWT is still valid, but the DB row is used, so it must be 401. Run the folder 'Session check' on its own, not together with the main one."
+url: "{{baseUrl}}/api/me"
+method: GET
+headers:
+  Authorization: Bearer {{customerToken}}
+scripts:
+  - type: afterResponse
+    code: pm.test("401 after the auth_tokens row was revoked", () => pm.response.to.have.status(401));
+    language: text/javascript
+order: 1000

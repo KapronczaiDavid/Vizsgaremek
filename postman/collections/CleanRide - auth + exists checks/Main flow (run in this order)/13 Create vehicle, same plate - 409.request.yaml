@@ -1,0 +1,20 @@
+$kind: http-request
+name: 13 Create vehicle, same plate -> 409
+url: "{{baseUrl}}/api/me/vehicles"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{customerToken}}
+body:
+  type: text
+  content: |-
+    {
+      "brand": "audi",
+      "licensePlate": "{{plate}}",
+      "vehicleType": "suv"
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test("409 (existsByLicensePlate fix)", () => pm.response.to.have.status(409));
+    language: text/javascript
+order: 13000

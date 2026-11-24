@@ -19,13 +19,13 @@ public class ServiceRepository{
 
     public boolean existsByName(String name) {
         StoredProcedureQuery query =
-                entityManager.createStoredProcedureQuery("exists_by_service_name");
+                entityManager.createStoredProcedureQuery("exists_by_service_name", Services.class);
 
         query.registerStoredProcedureParameter(1, String.class, ParameterMode.IN);
         query.setParameter(1, name);
 
-        List<Object> result = query.getResultList();
-        return ((Number) result.getFirst()).longValue() > 0;
+        List<Services> result = query.getResultList();
+        return result.stream().findFirst().isPresent();
     }
 
 

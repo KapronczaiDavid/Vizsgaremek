@@ -1,0 +1,20 @@
+$kind: http-request
+name: 18 Update someone else's vehicle (admin token) -> 403
+url: "{{baseUrl}}/api/vehicles/{{vehicle1Id}}"
+method: PUT
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{adminToken}}
+body:
+  type: text
+  content: |-
+    {
+      "brand": "bmw",
+      "licensePlate": "HACK-1",
+      "vehicleType": "sedan"
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test("403 (ownership check)", () => pm.response.to.have.status(403));
+    language: text/javascript
+order: 18000

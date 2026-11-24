@@ -19,13 +19,13 @@ public class AdminRepository {
 
     public boolean existsByEmail(String email) {
         StoredProcedureQuery query =
-                entityManager.createStoredProcedureQuery("exists_by_admin_email");
+                entityManager.createStoredProcedureQuery("exists_by_admin_email", Admin.class);
 
         query.registerStoredProcedureParameter(1, String.class, ParameterMode.IN);
         query.setParameter(1, email);
 
-        List<Object> result = query.getResultList();
-        return ((Number) result.getFirst()).longValue() > 0;
+        List<Admin> result = query.getResultList();
+        return result.stream().findFirst().isPresent();
     }
     public Optional<Admin> getAdminByEmail(String email) {
         StoredProcedureQuery query =
