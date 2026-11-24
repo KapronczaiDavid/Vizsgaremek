@@ -1,11 +1,32 @@
 # Maven build output
 target/
+!.mvn/wrapper/maven-wrapper.jar
 
-# IntelliJ
+# IntelliJ IDEA
 .idea/
 *.iml
 *.iws
+*.ipr
 out/
+
+# VS Code / Eclipse / NetBeans
+.vscode/
+.classpath
+.project
+.settings/
+.apt_generated/
+.factorypath
+.springBeans
+.sts4-cache/
+nbproject/
+build/
+
+# Java / Spring Boot
+*.class
+*.jar
+*.war
+hs_err_pid*
+spring_boot_debug.log
 
 # OS files
 .DS_Store
@@ -13,7 +34,12 @@ Thumbs.db
 
 # Logs
 *.log
+logs/
 
 # Secrets / local config
-application-local.yaml
 .env
+.env.*
+application-local.yaml
+application-local.yml
+application-local.properties
+application-secret.yaml

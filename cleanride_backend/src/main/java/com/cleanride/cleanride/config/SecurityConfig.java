@@ -32,6 +32,8 @@ public class SecurityConfig {
                     )
                     .authorizeHttpRequests(auth -> auth
                             .requestMatchers(HttpMethod.POST, "/api/users/login").permitAll()
+                            .requestMatchers(HttpMethod.POST, "/api/users/verify-email").permitAll()
+                            .requestMatchers(HttpMethod.POST, "/api/users/resend-verification").permitAll()
                             .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                             .requestMatchers(HttpMethod.POST, "/api/admins/login").permitAll()
                             .requestMatchers(HttpMethod.GET, "/api/services/**").permitAll()
@@ -40,7 +42,9 @@ public class SecurityConfig {
                             .requestMatchers(HttpMethod.PUT, "/api/services/**").hasRole("ADMIN")
                             .requestMatchers(HttpMethod.DELETE, "/api/services/**").hasRole("ADMIN")
                             .requestMatchers("/api/users/**").hasRole("ADMIN")
-                            .requestMatchers("/api/me/**").hasRole("CUSTOMER")
+                            .requestMatchers("/api/me/**").authenticated()
+                            .requestMatchers(HttpMethod.GET, "/api/me").hasRole("CUSTOMER")
+                            .requestMatchers(HttpMethod.PUT, "/api/me").hasRole("CUSTOMER")
                             .anyRequest().authenticated()
                     )
 

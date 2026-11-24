@@ -95,6 +95,17 @@ public class    UsersRepository {
         entityManager.clear();
     }
 
+    public void markEmailVerified(Integer id) {
+        StoredProcedureQuery query =
+                entityManager.createStoredProcedureQuery("mark_email_verified");
+
+        query.registerStoredProcedureParameter(1, Integer.class, ParameterMode.IN);
+        query.setParameter(1, id);
+
+        query.execute();
+        entityManager.clear();
+    }
+
     public void deleteUser(Integer id) {
         StoredProcedureQuery query =
                 entityManager.createStoredProcedureQuery("delete_user");

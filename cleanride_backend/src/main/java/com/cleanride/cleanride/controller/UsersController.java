@@ -2,6 +2,9 @@ package com.cleanride.cleanride.controller;
 
 import com.cleanride.cleanride.dto.request.CreateUserRequest;
 import com.cleanride.cleanride.dto.request.LoginRequest;
+import com.cleanride.cleanride.dto.request.ResendVerificationRequest;
+import com.cleanride.cleanride.dto.request.VerifyEmailRequest;
+import com.cleanride.cleanride.service.EmailVerificationService;
 import com.cleanride.cleanride.dto.request.UpdateUserRequest;
 import com.cleanride.cleanride.dto.response.UserResponse;
 import com.cleanride.cleanride.service.UserService;
@@ -20,6 +23,7 @@ import java.util.List;
 public class UsersController {
 
     private final UserService userService;
+    private final EmailVerificationService emailVerificationService;
 
     @PostMapping
     public ResponseEntity<UserResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
@@ -28,6 +32,18 @@ public class UsersController {
     @PostMapping("/login")
     public UserResponse login(@Valid @RequestBody LoginRequest request) {
         return userService.login(request);
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<Void> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
+        emailVerificationService.verify(request.getEmail(), request.getCode());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<Void> resendVerification(@Valid @RequestBody ResendVerificationRequest request) {
+        emailVerificationService.resend(request.getEmail());
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping

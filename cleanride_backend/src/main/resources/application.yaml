@@ -4,6 +4,22 @@ spring:
   application:
     name: cleanride
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: cleanrideinbox@gmail.com
+    password: qwas gsyp nnqi zjod
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
   datasource:
     url: jdbc:mysql://localhost:3306/cleanride?useSSL=false&serverTimezone=UTC
     username: root
@@ -21,3 +37,10 @@ spring:
 jwt:
   secret: bkCiftgiPojtk7iOwyWdH8J0ke6eEldO
   expiration-ms: 86400000
+
+verification:
+  hmac-secret: bkCiftgiPojtk7iOwyWdH8J0ke6eEldO
+  code-ttl-minutes: 10
+  max-attempts: 5
+  resend-cooldown-seconds: 60
+  max-sends-per-hour: 5

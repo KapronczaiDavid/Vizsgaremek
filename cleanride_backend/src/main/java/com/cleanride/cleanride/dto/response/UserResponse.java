@@ -12,6 +12,7 @@ public class UserResponse {
     private String name;
     private String email;
     private String phone;
+    private Boolean emailVerified;
     private LoyaltyLevel loyaltyLevel;
     private String token;
 }

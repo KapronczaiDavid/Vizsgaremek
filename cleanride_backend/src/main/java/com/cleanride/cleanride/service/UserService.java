@@ -25,6 +25,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthTokenService authTokenService;
+    private final EmailVerificationService emailVerificationService;
 
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
@@ -42,6 +43,8 @@ public class UserService {
                 request.getEmail(),
                 request.getPhone(),
                 passwordEncoder.encode(request.getPassword()));
+
+        emailVerificationService.sendInitialCode(saved);
 
         return toResponseDto(saved);
     }
@@ -64,6 +67,10 @@ public class UserService {
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                     "Hibás email vagy jelszó");
+        }
+        if (!Boolean.TRUE.equals(user.getEmailVerified())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Az email cím még nincs megerősítve");
         }
         String token = jwtService.generateToken(user.getId(), "CUSTOMER");
         authTokenService.saveSession(token, user.getId(), null);
@@ -111,6 +118,7 @@ public class UserService {
                 .name(user.getName())
                 .email(user.getEmail())
                 .phone(user.getPhone())
+                .emailVerified(user.getEmailVerified())
                 .loyaltyLevel(user.getLoyaltyLevel())
                 .token(token)
                 .build();
