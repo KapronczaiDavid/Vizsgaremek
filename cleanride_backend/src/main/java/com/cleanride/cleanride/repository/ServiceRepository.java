@@ -2,6 +2,7 @@ package com.cleanride.cleanride.repository;
 
 import com.cleanride.cleanride.entity.Services;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.ParameterMode;
 import jakarta.persistence.StoredProcedureQuery;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,8 @@ import java.util.Optional;
 @SuppressWarnings("unchecked")
 public class ServiceRepository{
 
-    private final EntityManager entityManager;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public boolean existsByName(String name) {
         StoredProcedureQuery query =

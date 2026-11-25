@@ -1,6 +1,7 @@
 package com.cleanride.cleanride.repository;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.ParameterMode;
 import jakarta.persistence.StoredProcedureQuery;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +14,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AuthTokenRepository {
 
-    private final EntityManager entityManager;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public void createToken(Integer userId, Integer adminId,
                             String tokenHash, LocalDateTime expiresAt) {
@@ -44,5 +46,23 @@ public class AuthTokenRepository {
 
         List<?> result = query.getResultList();
         return !result.isEmpty();
+    }
+
+    public void revokeSession(String tokenHash, LocalDateTime now) {
+        StoredProcedureQuery query =
+                entityManager.createStoredProcedureQuery("revoke_session");
+        query.registerStoredProcedureParameter(1, String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter(2, LocalDateTime.class, ParameterMode.IN);
+        query.setParameter(1, tokenHash);
+        query.setParameter(2, now);
+        query.execute();
+    }
+
+    public void purgeExpired(LocalDateTime cutoff) {
+        StoredProcedureQuery query =
+                entityManager.createStoredProcedureQuery("purge_expired_tokens");
+        query.registerStoredProcedureParameter(1, LocalDateTime.class, ParameterMode.IN);
+        query.setParameter(1, cutoff);
+        query.execute();
     }
 }

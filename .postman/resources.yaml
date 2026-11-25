@@ -8,6 +8,7 @@ cloudResources:
   collections:
     ../postman/collections/CleanRide - JWT & Authorization Tests: 6889716b-2cc8-483f-b7e7-9d5b127cada2
     ../postman/collections/CleanRide - auth + exists checks: d188c643-ecfa-4aec-875f-3e3fc9e73352
+    ../postman/collections/CleanRide - API tests (short): 5a78e975-d079-4df2-a79f-b315d49264d8
 
 # All resources in the `postman/` folder are automatically registered in Local View.
 # Point to additional files outside the `postman/` folder to register them individually. Example:

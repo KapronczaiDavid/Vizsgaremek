@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
@@ -22,16 +23,18 @@ public class AdminService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthTokenService authTokenService;
+    private final LoginAttemptService loginAttemptService;
     @Transactional
-    public AdminResponse login(LoginRequest request) {
-        Admin admin = adminRepository.getAdminByEmail(request.getEmail())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                        "Hibás email vagy jelszó"));
+    public AdminResponse login(LoginRequest request, String clientIp) {
+        String attemptKey = "admin|" + clientIp + "|" + request.getEmail().toLowerCase(Locale.ROOT);
+        loginAttemptService.checkAllowed(attemptKey);
 
-        if (!passwordEncoder.matches(request.getPassword(), admin.getPasswordHash())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                    "Hibás email vagy jelszó");
+        Admin admin = adminRepository.getAdminByEmail(request.getEmail()).orElse(null);
+        if (admin == null || !passwordEncoder.matches(request.getPassword(), admin.getPasswordHash())) {
+            loginAttemptService.recordFailure(attemptKey);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Hibás email vagy jelszó");
         }
+        loginAttemptService.reset(attemptKey);
         String token = jwtService.generateToken(admin.getId(), "ADMIN");
         authTokenService.saveSession(token, null, admin.getId());
         return toResponseDto(admin, token);

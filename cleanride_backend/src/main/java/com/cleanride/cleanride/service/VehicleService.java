@@ -5,6 +5,7 @@ import com.cleanride.cleanride.dto.request.UpdateVehicleRequest;
 import com.cleanride.cleanride.dto.response.VehicleResponse;
 import com.cleanride.cleanride.entity.Vehicle;
 import com.cleanride.cleanride.repository.VehicleRepository;
+import com.cleanride.cleanride.security.AuthPrincipal;
 import com.cleanride.cleanride.util.LicensePlateNormalizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -49,7 +50,16 @@ public class VehicleService {
                 .toList();
     }
 
-    public VehicleResponse getVehicleById(Integer id) {
+    /** Customers may only read their own vehicles; admins may read any. Non-owners get a 404. */
+    public VehicleResponse getVehicleForCaller(Integer id, AuthPrincipal caller) {
+        Vehicle vehicle = findVehicle(id);
+        if (!caller.isAdmin() && !vehicle.getUserId().equals(caller.id())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Jármű nem található");
+        }
+        return toResponseDto(vehicle);
+    }
+
+    private VehicleResponse getVehicleById(Integer id) {
         return toResponseDto(findVehicle(id));
     }
 

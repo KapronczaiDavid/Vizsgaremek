@@ -1,6 +1,7 @@
 package com.cleanride.cleanride.repository;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.ParameterMode;
 import jakarta.persistence.StoredProcedureQuery;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,8 @@ import java.util.Optional;
 @SuppressWarnings("unchecked")
 public class EmailVerificationRepository {
 
-    private final EntityManager entityManager;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public record ActiveToken(Integer id, String tokenHash, int attempts) {}
 

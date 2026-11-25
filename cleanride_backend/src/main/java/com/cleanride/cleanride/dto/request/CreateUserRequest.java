@@ -24,6 +24,6 @@ public class CreateUserRequest {
     private String phone;
 
     @NotBlank(message = "jelszó megadása kötelező")
-    @Size(min = 6, message = "a jelszó legalább 6 karakter legyen")
+    @Size(min = 8, message = "a jelszó legalább 8 karakter legyen")
     private String password;
 }

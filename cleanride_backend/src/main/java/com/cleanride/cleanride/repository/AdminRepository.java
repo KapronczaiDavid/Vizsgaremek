@@ -3,6 +3,7 @@ package com.cleanride.cleanride.repository;
 import com.cleanride.cleanride.entity.Admin;
 import com.cleanride.cleanride.entity.Users;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.ParameterMode;
 import jakarta.persistence.StoredProcedureQuery;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @SuppressWarnings("unchecked")
 public class AdminRepository {
-    private final EntityManager entityManager;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public boolean existsByEmail(String email) {
         StoredProcedureQuery query =

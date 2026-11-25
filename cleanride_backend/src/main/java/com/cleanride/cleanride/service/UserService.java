@@ -15,7 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
@@ -26,9 +28,14 @@ public class UserService {
     private final JwtService jwtService;
     private final AuthTokenService authTokenService;
     private final EmailVerificationService emailVerificationService;
+    private final LoginAttemptService loginAttemptService;
 
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
+        if (request.getPassword().getBytes(StandardCharsets.UTF_8).length > 72) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "A jelszó legfeljebb 72 bájt hosszú lehet");
+        }
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Ez az email cím már foglalt: " + request.getEmail());
@@ -59,15 +66,16 @@ public class UserService {
         return toResponseDto(findActiveUser(id));
     }
 
-    public UserResponse login(LoginRequest request) {
-        Users user = userRepository.getUserByEmail(request.getEmail())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                        "Hibás email vagy jelszó"));
+    public UserResponse login(LoginRequest request, String clientIp) {
+        String attemptKey = "user|" + clientIp + "|" + request.getEmail().toLowerCase(Locale.ROOT);
+        loginAttemptService.checkAllowed(attemptKey);
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                    "Hibás email vagy jelszó");
+        Users user = userRepository.getUserByEmail(request.getEmail()).orElse(null);
+        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            loginAttemptService.recordFailure(attemptKey);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Hibás email vagy jelszó");
         }
+        loginAttemptService.reset(attemptKey);
         if (!Boolean.TRUE.equals(user.getEmailVerified())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "Az email cím még nincs megerősítve");
@@ -80,8 +88,9 @@ public class UserService {
     @Transactional
     public UserResponse updateUser(Integer id, UpdateUserRequest request) {
         Users user = findActiveUser(id);
+        boolean emailChanged = !user.getEmail().equalsIgnoreCase(request.getEmail());
 
-        if (!user.getEmail().equals(request.getEmail())
+        if (emailChanged
                 && userRepository.existsByEmail(request.getEmail())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Ez az email cím már foglalt: " + request.getEmail());
@@ -93,7 +102,12 @@ public class UserService {
         }
 
         userRepository.updateUser(id, request.getName(), request.getEmail(), request.getPhone());
-        return getById(id);
+        Users updated = findActiveUser(id);
+        if (emailChanged) {
+            // the DB procedure reset email_verified; the new address must be confirmed again
+            emailVerificationService.sendInitialCode(updated);
+        }
+        return toResponseDto(updated);
     }
 
     @Transactional

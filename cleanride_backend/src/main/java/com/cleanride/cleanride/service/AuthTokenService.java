@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.HexFormat;
 
 @Service
@@ -24,11 +24,21 @@ public class AuthTokenService {
     public void saveSession(String token, Integer userId, Integer adminId) {
         LocalDateTime expiresAt = LocalDateTime.ofInstant(
                 jwtService.parse(token).getExpiration().toInstant(),
-                ZoneId.systemDefault());
+                ZoneOffset.UTC);
         authTokenRepository.createToken(userId, adminId, hash(token), expiresAt);
     }
     public boolean isActive(String token) {
-        return authTokenRepository.existsValidForLogin(hash(token), LocalDateTime.now());
+        return authTokenRepository.existsValidForLogin(hash(token), LocalDateTime.now(ZoneOffset.UTC));
+    }
+
+    @Transactional
+    public void purgeExpired() {
+        authTokenRepository.purgeExpired(LocalDateTime.now(ZoneOffset.UTC).minusDays(2));
+    }
+
+    @Transactional
+    public void revoke(String token) {
+        authTokenRepository.revokeSession(hash(token), LocalDateTime.now(ZoneOffset.UTC));
     }
 
     private String hash(String token) {
