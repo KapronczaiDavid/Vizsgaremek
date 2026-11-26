@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 
@@ -31,10 +30,6 @@ public class UserService {
 
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
-        if (request.getPassword().getBytes(StandardCharsets.UTF_8).length > 72) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "A jelszó legfeljebb 72 bájt hosszú lehet");
-        }
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Ez az email cím már foglalt: " + request.getEmail());

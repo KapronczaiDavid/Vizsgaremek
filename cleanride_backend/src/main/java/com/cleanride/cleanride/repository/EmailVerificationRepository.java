@@ -67,25 +67,6 @@ public class EmailVerificationRepository {
                 ((Number) r[2]).intValue()));
     }
 
-    public boolean consumeAttempt(Integer tokenId, int maxAttempts) {
-        StoredProcedureQuery query =
-                entityManager.createStoredProcedureQuery("consume_token_attempt");
-        query.registerStoredProcedureParameter(1, Integer.class, ParameterMode.IN);
-        query.registerStoredProcedureParameter(2, Integer.class, ParameterMode.IN);
-        query.setParameter(1, tokenId);
-        query.setParameter(2, maxAttempts);
-        return firstScalarAsLong(query.getResultList()) > 0;
-    }
-
-    public boolean markUsed(Integer tokenId, LocalDateTime now) {
-        StoredProcedureQuery query = entityManager.createStoredProcedureQuery("mark_token_used");
-        query.registerStoredProcedureParameter(1, Integer.class, ParameterMode.IN);
-        query.registerStoredProcedureParameter(2, LocalDateTime.class, ParameterMode.IN);
-        query.setParameter(1, tokenId);
-        query.setParameter(2, now);
-        return firstScalarAsLong(query.getResultList()) > 0;
-    }
-
     public SendStats getSendStats(Integer userId, LocalDateTime hourAgo, LocalDateTime cooldownAgo) {
         StoredProcedureQuery query =
                 entityManager.createStoredProcedureQuery("get_email_verification_send_stats");
@@ -102,16 +83,5 @@ public class EmailVerificationRepository {
         }
         Object[] r = (Object[]) rows.getFirst();
         return new SendStats(((Number) r[0]).longValue(), ((Number) r[1]).longValue());
-    }
-
-    private long firstScalarAsLong(List<?> rows) {
-        if (rows.isEmpty()) {
-            return 0;
-        }
-        Object first = rows.getFirst();
-        if (first instanceof Object[] arr) {
-            first = arr[0];
-        }
-        return ((Number) first).longValue();
     }
 }

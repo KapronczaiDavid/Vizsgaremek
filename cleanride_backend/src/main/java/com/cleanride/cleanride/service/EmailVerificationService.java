@@ -1,6 +1,7 @@
 package com.cleanride.cleanride.service;
 
 import com.cleanride.cleanride.entity.Users;
+import com.cleanride.cleanride.repository.AuthTokenRepository;
 import com.cleanride.cleanride.repository.EmailVerificationRepository;
 import com.cleanride.cleanride.repository.EmailVerificationRepository.ActiveToken;
 import com.cleanride.cleanride.repository.EmailVerificationRepository.SendStats;
@@ -31,6 +32,7 @@ public class EmailVerificationService {
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private final EmailVerificationRepository tokens;
+    private final AuthTokenRepository authTokens;
     private final UsersRepository users;
     private final MailService mailService;
 
@@ -87,7 +89,7 @@ public class EmailVerificationService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "A kód lejárt vagy nem létezik, kérj új kódot"));
 
-        if (!tokens.consumeAttempt(token.id(), maxAttempts)) {
+        if (!authTokens.consumeAttempt(token.id(), maxAttempts)) {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
                     "Elfogytak a próbálkozások, kérj új kódot");
         }
@@ -104,7 +106,7 @@ public class EmailVerificationService {
                             : "Hibás kód. Elfogytak a próbálkozások, kérj új kódot");
         }
 
-        if (!tokens.markUsed(token.id(), now)) {
+        if (!authTokens.markUsed(token.id(), now)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "A kód már fel lett használva");
         }

@@ -1,5 +1,6 @@
 package com.cleanride.cleanride.dto.request;
 
+import com.cleanride.cleanride.validation.StrongPassword;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -24,6 +25,6 @@ public class CreateUserRequest {
     private String phone;
 
     @NotBlank(message = "jelszó megadása kötelező")
-    @Size(min = 8, message = "a jelszó legalább 8 karakter legyen")
+    @StrongPassword
     private String password;
 }

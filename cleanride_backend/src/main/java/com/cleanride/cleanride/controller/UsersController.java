@@ -1,10 +1,13 @@
 package com.cleanride.cleanride.controller;
 
 import com.cleanride.cleanride.dto.request.CreateUserRequest;
+import com.cleanride.cleanride.dto.request.ForgotPasswordRequest;
 import com.cleanride.cleanride.dto.request.LoginRequest;
+import com.cleanride.cleanride.dto.request.ResetPasswordRequest;
 import com.cleanride.cleanride.dto.request.ResendVerificationRequest;
 import com.cleanride.cleanride.dto.request.VerifyEmailRequest;
 import com.cleanride.cleanride.service.EmailVerificationService;
+import com.cleanride.cleanride.service.PasswordResetService;
 import com.cleanride.cleanride.dto.request.UpdateUserRequest;
 import com.cleanride.cleanride.dto.response.UserResponse;
 import com.cleanride.cleanride.service.UserService;
@@ -26,6 +29,7 @@ public class UsersController {
 
     private final UserService userService;
     private final EmailVerificationService emailVerificationService;
+    private final PasswordResetService passwordResetService;
     private final RequestRateLimiter rateLimiter;
 
     @PostMapping
@@ -52,6 +56,22 @@ public class UsersController {
                                                    HttpServletRequest http) {
         rateLimiter.check("resend|" + http.getRemoteAddr(), 10, Duration.ofHours(1));
         emailVerificationService.resend(request.getEmail());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request,
+                                               HttpServletRequest http) {
+        rateLimiter.check("forgot|" + http.getRemoteAddr(), 10, Duration.ofHours(1));
+        passwordResetService.requestReset(request.getEmail());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request,
+                                              HttpServletRequest http) {
+        rateLimiter.check("reset|" + http.getRemoteAddr(), 20, Duration.ofMinutes(15));
+        passwordResetService.reset(request.getEmail(), request.getCode(), request.getNewPassword());
         return ResponseEntity.noContent().build();
     }
 

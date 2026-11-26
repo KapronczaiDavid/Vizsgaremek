@@ -23,40 +23,58 @@ import java.nio.charset.StandardCharsets;
 public class MailService {
 
     private final JavaMailSender mailSender;
-    private final String htmlTemplate = readResource("mail/verification-email.html");
+    private final String verificationTemplate = readResource("mail/verification-email.html");
+    private final String passwordResetTemplate = readResource("mail/password-reset-email.html");
 
     @Value("${spring.mail.username}")
     private String fromAddress;
+
     @Async
     public void sendVerificationCode(String to, String name, String code, int ttlMinutes) {
-        String html = htmlTemplate
-                .replace("{{name}}", HtmlUtils.htmlEscape(name))
-                .replace("{{code}}", code)
-                .replace("{{ttl}}", String.valueOf(ttlMinutes));
-
         String text = "Szia " + name + "!\n\n"
                 + "Az email címed megerősítő kódja: " + code + "\n"
                 + "A kód " + ttlMinutes + " percig érvényes.\n\n"
                 + "Ha nem te regisztráltál, nyugodtan hagyd figyelmen kívül ezt a levelet.\n\n"
                 + "Clean Ride Cosmetics · Mohács\n";
+        sendCodeMail(to, name, code, ttlMinutes, verificationTemplate, text,
+                "Clean Ride – email cím megerősítése");
+    }
+
+    @Async
+    public void sendPasswordResetCode(String to, String name, String code, int ttlMinutes) {
+        String text = "Szia " + name + "!\n\n"
+                + "A jelszó-visszaállító kódod: " + code + "\n"
+                + "A kód " + ttlMinutes + " percig érvényes.\n\n"
+                + "Ha nem te kérted, hagyd figyelmen kívül ezt a levelet, a jelszavad nem változik.\n\n"
+                + "Clean Ride Cosmetics · Mohács\n";
+        sendCodeMail(to, name, code, ttlMinutes, passwordResetTemplate, text,
+                "Clean Ride – jelszó visszaállítása");
+    }
+
+    private void sendCodeMail(String to, String name, String code, int ttlMinutes,
+                              String template, String text, String subject) {
+        String html = template
+                .replace("{{name}}", HtmlUtils.htmlEscape(name))
+                .replace("{{code}}", code)
+                .replace("{{ttl}}", String.valueOf(ttlMinutes));
 
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             helper.setFrom(new InternetAddress(fromAddress, "Clean Ride Cosmetics", "UTF-8"));
             helper.setTo(to);
-            helper.setSubject("Clean Ride – email cím megerősítése");
+            helper.setSubject(subject);
             helper.setText(text, html);
             helper.addInline("logo", new ClassPathResource("mail/logo.png"));
 
             mailSender.send(message);
-            log.info("Verification email handed to the SMTP server");
+            log.info("Mail '{}' handed to the SMTP server", subject);
         } catch (MailAuthenticationException e) {
             log.error("Gmail rejected the login. Check GMAIL_USERNAME and that "
-                    + "GMAIL_APP_PASSWORD is an App Password (not the normal password): {}",
+                            + "GMAIL_APP_PASSWORD is an App Password (not the normal password): {}",
                     e.getMessage());
         } catch (Exception e) {
-            log.error("Could not send the verification email", e);
+            log.error("Could not send the mail '{}'", subject, e);
         }
     }
 

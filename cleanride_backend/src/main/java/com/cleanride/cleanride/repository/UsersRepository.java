@@ -108,6 +108,17 @@ public class    UsersRepository {
         entityManager.clear();
     }
 
+    public void updatePassword(Integer id, String passwordHash) {
+        StoredProcedureQuery query =
+                entityManager.createStoredProcedureQuery("update_user_password");
+        query.registerStoredProcedureParameter(1, Integer.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter(2, String.class, ParameterMode.IN);
+        query.setParameter(1, id);
+        query.setParameter(2, passwordHash);
+        query.execute();
+        entityManager.clear();
+    }
+
     public void deleteUser(Integer id) {
         StoredProcedureQuery query =
                 entityManager.createStoredProcedureQuery("delete_user");

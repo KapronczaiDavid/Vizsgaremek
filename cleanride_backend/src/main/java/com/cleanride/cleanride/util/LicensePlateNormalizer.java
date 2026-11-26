@@ -17,21 +17,29 @@ public final class LicensePlateNormalizer {
     private LicensePlateNormalizer() {
     }
 
+    /** Returns the plate as LETTERS-DIGITS (e.g. AOOR-455). Null stays null. */
     public static String normalize(String raw) {
         if (raw == null) {
             return null;
         }
+        String error = check(raw);
+        if (error != null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, error);
+        }
+        Matcher m = STRUCTURE.matcher(clean(raw));
+        m.matches();
+        return m.group(1) + "-" + m.group(2);
+    }
 
-        String plate = raw.replace("-", "").toUpperCase(Locale.ROOT);
-
-        Matcher m = STRUCTURE.matcher(plate);
+    /** Returns null when the plate is valid, otherwise the error message. */
+    public static String check(String raw) {
+        Matcher m = STRUCTURE.matcher(clean(raw));
         if (!m.matches()) {
-            throw invalid("a rendszám betűkből, majd számokból álljon (pl. ABC-123, ZORAN-1)");
+            return "a rendszám betűkből, majd számokból álljon (pl. ABC-123, ZORAN-1)";
         }
         String letters = m.group(1);
-        String digits = m.group(2);
         int l = letters.length();
-        int d = digits.length();
+        int d = m.group(2).length();
         int total = l + d;
 
         boolean validShape = switch (total) {
@@ -41,25 +49,22 @@ public final class LicensePlateNormalizer {
             default -> false;
         };
         if (!validShape) {
-            throw invalid("érvénytelen rendszám-felépítés (6 vagy 7 karakter, megengedett betű-szám arányokkal)");
+            return "érvénytelen rendszám-felépítés (6 vagy 7 karakter, megengedett betű-szám arányokkal)";
         }
-
         if (letters.contains("Q")) {
-            throw invalid("a Q betű nem használható rendszámban");
+            return "a Q betű nem használható rendszámban";
         }
-
         if (total == 7) {
             for (String digraph : DIGRAPHS) {
                 if (letters.contains(digraph)) {
-                    throw invalid("a 7 karakteres rendszámban nem szerepelhet kétjegyű mássalhangzó: " + digraph);
+                    return "a 7 karakteres rendszámban nem szerepelhet kétjegyű mássalhangzó: " + digraph;
                 }
             }
         }
-
-        return letters + "-" + digits;
+        return null;
     }
 
-    private static ResponseStatusException invalid(String message) {
-        return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
+    private static String clean(String raw) {
+        return raw.replace("-", "").toUpperCase(Locale.ROOT);
     }
 }

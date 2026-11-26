@@ -44,6 +44,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/users/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users/verify-email").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users/resend-verification").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/users/forgot-password").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/users/reset-password").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/admins/login").permitAll()
                         // services: inactive list is admin-only, the rest is public
