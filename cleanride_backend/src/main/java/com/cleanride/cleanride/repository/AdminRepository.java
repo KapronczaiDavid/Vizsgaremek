@@ -1,7 +1,6 @@
 package com.cleanride.cleanride.repository;
 
 import com.cleanride.cleanride.entity.Admin;
-import com.cleanride.cleanride.entity.Users;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.ParameterMode;
@@ -19,16 +18,6 @@ public class AdminRepository {
     @PersistenceContext
     private EntityManager entityManager;
 
-    public boolean existsByEmail(String email) {
-        StoredProcedureQuery query =
-                entityManager.createStoredProcedureQuery("exists_by_admin_email", Admin.class);
-
-        query.registerStoredProcedureParameter(1, String.class, ParameterMode.IN);
-        query.setParameter(1, email);
-
-        List<Admin> result = query.getResultList();
-        return result.stream().findFirst().isPresent();
-    }
     public Optional<Admin> getAdminByEmail(String email) {
         StoredProcedureQuery query =
                 entityManager.createStoredProcedureQuery("get_admin_by_email", Admin.class);

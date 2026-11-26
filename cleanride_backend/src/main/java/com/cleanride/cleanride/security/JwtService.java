@@ -1,7 +1,6 @@
 package com.cleanride.cleanride.security;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -39,23 +38,6 @@ public class JwtService {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-    }
-
-    public boolean isValid(String token) {
-        try {
-            parse(token);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    public Integer getUserId(String token) {
-        return Integer.valueOf(parse(token).getSubject());
-    }
-
-    public String getRole(String token) {
-        return parse(token).get("role", String.class);
     }
 }
 

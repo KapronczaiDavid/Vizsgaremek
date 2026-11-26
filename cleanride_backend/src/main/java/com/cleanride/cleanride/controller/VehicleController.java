@@ -53,13 +53,13 @@ public class VehicleController {
     public VehicleResponse updateVehicle(@PathVariable Integer id,
                                          @AuthenticationPrincipal AuthPrincipal principal,
                                          @Valid @RequestBody UpdateVehicleRequest request) {
-        return vehicleService.updateVehicle(id, principal.id(), request);
+        return vehicleService.updateVehicle(id, principal, request);
     }
 
     @DeleteMapping("/vehicles/{id}")
     public ResponseEntity<Void> deleteVehicle(@PathVariable Integer id,
                                               @AuthenticationPrincipal AuthPrincipal principal) {
-        vehicleService.deleteVehicle(id, principal.id());
+        vehicleService.deleteVehicle(id, principal);
         return ResponseEntity.noContent().build();
     }
 }

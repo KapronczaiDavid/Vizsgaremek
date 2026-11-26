@@ -2,7 +2,6 @@ package com.cleanride.cleanride.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,6 +19,4 @@ public class LoginRequest {
     @NotBlank(message = "az email cím megadása kötelező")
     @Email(message = "Az email nem érvényes")
     private String email;
-
-    private String token;
-    }
+}

@@ -6,7 +6,6 @@ import com.cleanride.cleanride.dto.request.UpdateUserRequest;
 import com.cleanride.cleanride.dto.response.UserResponse;
 import com.cleanride.cleanride.entity.Users;
 import com.cleanride.cleanride.repository.UsersRepository;
-import com.cleanride.cleanride.security.JwtAuthFilter;
 import com.cleanride.cleanride.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

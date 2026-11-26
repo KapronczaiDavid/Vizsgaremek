@@ -63,6 +63,19 @@ public class VehicleService {
         return toResponseDto(findVehicle(id));
     }
 
+    /**
+     * Only the owning customer may change a vehicle. Admin and customer ids live in different
+     * tables, so the role is checked together with the id. Anyone else gets a 404, which does
+     * not reveal whether the vehicle exists.
+     */
+    private Vehicle findOwnedVehicle(Integer id, AuthPrincipal caller) {
+        Vehicle vehicle = findVehicle(id);
+        if (!caller.isCustomer() || !vehicle.getUserId().equals(caller.id())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Jármű nem található");
+        }
+        return vehicle;
+    }
+
     private Vehicle findVehicle(Integer id) {
         return vehicleRepository.getVehicleById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -80,12 +93,8 @@ public class VehicleService {
     }
 
     @Transactional
-    public VehicleResponse updateVehicle(Integer id, Integer callerId, UpdateVehicleRequest r) {
-        Vehicle vehicle = findVehicle(id);
-
-        if (!vehicle.getUserId().equals(callerId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ez nem a te járműved");
-        }
+    public VehicleResponse updateVehicle(Integer id, AuthPrincipal caller, UpdateVehicleRequest r) {
+        Vehicle vehicle = findOwnedVehicle(id, caller);
 
         String newPlate = LicensePlateNormalizer.normalize(r.getLicensePlate());
 
@@ -102,13 +111,8 @@ public class VehicleService {
 
 
     @Transactional
-    public void deleteVehicle(Integer id, Integer callerId) {
-        Vehicle vehicle = findVehicle(id);
-
-        if (!vehicle.getUserId().equals(callerId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ez nem a te járműved");
-        }
-
+    public void deleteVehicle(Integer id, AuthPrincipal caller) {
+        findOwnedVehicle(id, caller);
         vehicleRepository.deleteVehicle(id);
     }
 }

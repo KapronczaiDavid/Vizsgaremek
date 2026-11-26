@@ -1,16 +1,12 @@
 package com.cleanride.cleanride.entity;
 
-import com.cleanride.cleanride.entity.enums.LoyaltyLevel;
 import com.cleanride.cleanride.entity.enums.VehicleBrand;
 import com.cleanride.cleanride.entity.enums.VehicleType;
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.Builder;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "vehicles")
 @Getter

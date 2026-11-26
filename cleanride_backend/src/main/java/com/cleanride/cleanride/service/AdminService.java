@@ -9,10 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
 import java.util.Locale;
 
 @Service
@@ -24,7 +22,9 @@ public class AdminService {
     private final JwtService jwtService;
     private final AuthTokenService authTokenService;
     private final LoginAttemptService loginAttemptService;
-    @Transactional
+
+    // No @Transactional here: bcrypt is slow and must not hold a DB connection while it runs.
+    // The only write (saveSession) opens its own transaction.
     public AdminResponse login(LoginRequest request, String clientIp) {
         String attemptKey = "admin|" + clientIp + "|" + request.getEmail().toLowerCase(Locale.ROOT);
         loginAttemptService.checkAllowed(attemptKey);
