@@ -1,0 +1,248 @@
+/*design: violet + cyan, Outfit headings, pill buttons, stepper, light summary card*/
+:root{
+    --bg:#0a0911;
+    --p:#19162a;
+    --p2:#221f3b;
+    --b:#2d2844;
+    --t:#f5f4fb;
+    --m:#b6b2cb;
+    --at:rgba(133,108,210,.22);
+    --cy:#72a6cc
+}
+
+body{
+    font-family:Inter,system-ui,sans-serif;
+    background:#0a0911 linear-gradient(180deg,#1a182a 0,#0a0911 360px) no-repeat
+}
+
+h1,
+h2,
+h3,
+.st,
+.tot.big,
+.logo b{
+    font-family:Outfit,Inter,sans-serif
+}
+
+h1{
+    font-weight:800;
+    font-size:clamp(28px,4vw,40px);
+    letter-spacing:-.01em
+}
+
+h3{
+    font-weight:800;
+    font-size:17px
+}
+
+aside{
+    background:#100e1c
+}
+
+.top{
+    background:rgba(25,22,42,.9)
+}
+
+.nv.on{
+    box-shadow:inset 3px 0 var(--cy)
+}
+
+.card{
+    border-radius:24px;
+    padding:24px
+}
+
+input,
+select,
+textarea{
+    border-radius:12px;
+    min-height:46px;
+    border-color:#474169;
+    background:#0a0911
+}
+
+textarea{
+    min-height:0
+}
+
+input:focus,
+select:focus,
+textarea:focus{
+    outline-color:var(--cy)
+}
+
+.btn{
+    border-radius:999px;
+    padding:12px 26px;
+    min-height:46px
+}
+
+.btn.sm{
+    min-height:0;
+    padding:6px 14px
+}
+
+.btn.s{
+    background:transparent;
+    border:1.5px solid var(--cy);
+    color:var(--cy)
+}
+
+.btn.s:hover{
+    background:rgba(114,166,204,.1);
+    border-color:var(--cy)
+}
+
+.sv{
+    border:2px solid #383259;
+    border-radius:18px;
+    background:#100e1c
+}
+
+.sv.on{
+    border-color:var(--cy);
+    background:#272244
+}
+
+.sl button{
+    border:2px solid #383259;
+    border-radius:12px;
+    background:#100e1c;
+    min-width:76px;
+    min-height:44px
+}
+
+.sl button.on{
+    background:#272244;
+    border-color:var(--cy)
+}
+
+.cal button.on{
+    background:#272244;
+    border:2px solid var(--cy)
+}
+
+.eb,
+.link{
+    color:var(--cy)
+}
+
+.logo small{
+    color:#aba0e0;
+    letter-spacing:.13em;
+    white-space:nowrap
+}
+
+.logo b{
+    white-space:nowrap
+}
+
+.hero h2 span{
+    background:linear-gradient(90deg,#aba0e0,var(--cy));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent
+}
+
+.stp{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px 26px;
+    margin:0 0 22px;
+    padding:0;
+    list-style:none
+}
+
+.stp li{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:var(--m)
+}
+
+.stp i{
+    display:grid;
+    place-items:center;
+    width:34px;
+    height:34px;
+    border-radius:50%;
+    border:1.5px solid #474169;
+    font:800 15px Outfit,sans-serif;
+    font-style:normal
+}
+
+.stp .on{
+    color:#ffffff;
+    font-weight:600
+}
+
+.stp .on i{
+    background:var(--a);
+    border-color:var(--a)
+}
+
+.stp .cur i{
+    box-shadow:0 0 0 3px #0a0911,0 0 0 5px var(--cy)
+}
+
+.sum{
+    background:#f0eef9;
+    border:0;
+    color:#141227
+}
+
+.sum h3{
+    color:#141227;
+    font-size:22px
+}
+
+.sum .tot{
+    color:#494461
+}
+
+.sum .tot span+span{
+    color:#141227;
+    font-weight:600
+}
+
+.sum .tot.big{
+    border-top-color:#d5d0ef
+}
+
+.sum .tot.big span+span{
+    color:#4d3e99;
+    font:800 26px Outfit,sans-serif
+}
+
+.sum .msg.mut{
+    color:#494461
+}
+
+.pk{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px
+}
+
+.pk button{
+    flex:1 1 150px;
+    text-align:left;
+    padding:14px 16px;
+    border-radius:18px;
+    border:2px solid #383259;
+    background:#100e1c;
+    cursor:pointer
+}
+
+.pk button:hover{
+    border-color:var(--cy)
+}
+
+.pk b{
+    display:block;
+    font:800 20px Outfit,sans-serif
+}
+
+.pk small{
+    color:var(--m)
+}
