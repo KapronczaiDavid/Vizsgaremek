@@ -26,7 +26,7 @@ public class MailService {
     private final String verificationTemplate = readResource("mail/verification-email.html");
     private final String passwordResetTemplate = readResource("mail/password-reset-email.html");
 
-    @Value("${spring.mail.username}")
+    @Value("${app.mail-from}")
     private String fromAddress;
 
     @Async
@@ -70,8 +70,8 @@ public class MailService {
             mailSender.send(message);
             log.info("Mail '{}' handed to the SMTP server", subject);
         } catch (MailAuthenticationException e) {
-            log.error("Gmail rejected the login. Check GMAIL_USERNAME and that "
-                            + "GMAIL_APP_PASSWORD is an App Password (not the normal password): {}",
+            log.error("The mail server rejected the login. Check BREVO_SMTP_LOGIN and "
+                    + "BREVO_SMTP_KEY: {}",
                     e.getMessage());
         } catch (Exception e) {
             log.error("Could not send the mail '{}'", subject, e);
